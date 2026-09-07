@@ -53,7 +53,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '1.5rem' }}>
           <img
-            src="/brand/logo-polygon.jpg"
+            src="/brand/logo.jpg"
             alt="Mangator Logo"
             style={{
               width: '54px',

@@ -719,7 +719,7 @@ export function App() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img
-              src="/brand/logo-polygon.jpg"
+              src="/brand/logo.jpg"
               alt="Mangator Alligator Mascot"
               style={{
                 width: '38px',

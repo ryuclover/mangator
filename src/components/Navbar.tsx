@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Compass, Bookmark, Search, Info, ShieldCheck, Zap } from 'lucide-react';
 
 interface NavbarProps {
@@ -22,18 +22,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   isMode2,
   onToggleMode2,
 }) => {
-  const logos = [
-    { id: 'polygon', src: '/brand/logo-polygon.jpg', label: 'Polygon Tech' },
-    { id: 'book', src: '/brand/logo-book.jpg', label: 'Book Maw' },
-    { id: 'comic', src: '/brand/logo-comic.jpg', label: 'Manga Panels' },
-    { id: 'chibi', src: '/brand/logo-chibi.jpg', label: 'Chibi Mascot' }
-  ];
-
-  const [currentLogoIdx, setCurrentLogoIdx] = useState(0);
+  const logoSrc = '/brand/logo.jpg';
 
   const handleIconClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentLogoIdx((prev) => (prev + 1) % logos.length);
     onToggleMode2();
   };
 
@@ -84,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onMouseLeave={(e) => (e.currentTarget.style.transform = isMode2 ? 'scale(1.05) rotate(0deg)' : 'scale(1) rotate(0deg)')}
           >
             <img
-              src={logos[currentLogoIdx].src}
+              src={logoSrc}
               alt="Mangator Alligator Mascot Icon"
               style={{
                 width: '100%',

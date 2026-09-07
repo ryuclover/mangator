@@ -93,7 +93,7 @@ export async function fetchMangaFireTrending(
         item.poster?.medium ||
         item.poster?.large ||
         item.poster?.small ||
-        '/brand/logo-polygon.jpg';
+        '/brand/logo.jpg';
 
       return {
         id: `mf-${item.hid}`,
@@ -166,7 +166,7 @@ function mapMangaDexItemToManga(item: any): Manga {
   const coverFileName = coverRel?.attributes?.fileName;
   const coverImage = coverFileName
     ? `https://uploads.mangadex.org/covers/${item.id}/${coverFileName}.512.jpg`
-    : '/brand/logo-polygon.jpg';
+    : '/brand/logo.jpg';
 
   const authorRel = item.relationships?.find((r: any) => r.type === 'author');
   const author = authorRel?.attributes?.name || 'Autor';
