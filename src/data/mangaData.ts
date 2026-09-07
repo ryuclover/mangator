@@ -50,6 +50,14 @@ export interface Manga {
   featured?: boolean;
   chapters: Chapter[];
   reviews: Review[];
+  // Campos estruturais do MangaFire
+  hid?: string;
+  slug?: string;
+  mangaType?: 'manga' | 'manhwa' | 'manhua' | 'other';
+  rank?: number;
+  latestChapterNum?: number;
+  chapterUpdatedAt?: string;
+  url?: string;
 }
 
 export interface ReadingProgress {

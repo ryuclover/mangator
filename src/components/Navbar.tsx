@@ -143,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {isMode2 ? (
                   <>
                     <Zap size={11} fill="#C084FC" />
-                    MODO 2 (ONLINE DB)
+                    🔥 MODO 2: MANGAFIRE LIVE
                   </>
                 ) : (
                   'MODO 1 (ACERVO)'
@@ -161,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isMode2 ? (
                 <>
                   <Zap size={11} color="#C084FC" />
-                  <span>Conectado ao Acervo Online (Clique no ícone p/ alternar)</span>
+                  <span>Requisições e dados reais do MangaFire (Clique no ícone p/ Modo 1)</span>
                 </>
               ) : (
                 <>
