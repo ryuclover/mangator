@@ -159,15 +159,30 @@ export function App() {
 
   // Handler to open Manga details (fetches chapters if online)
   const handleSelectManga = async (manga: Manga) => {
-    if (manga.chapters.length === 0) {
-      setIsLoadingChapters(true);
-      setSelectedManga(manga);
-      const fetchedChapters = await fetchOnlineChapters(manga);
-      const updatedManga: Manga = { ...manga, chapters: fetchedChapters };
-      setSelectedManga(updatedManga);
-      setIsLoadingChapters(false);
-    } else {
-      setSelectedManga(manga);
+    setSelectedManga(manga);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (isMode2) {
+      const hasRealChapters = manga.chapters.some(
+        (c) => !c.id.startsWith('mf-ch-') && !c.id.startsWith('ch-default')
+      );
+      if (!hasRealChapters) {
+        setIsLoadingChapters(true);
+        try {
+          const fetchedChapters = await fetchOnlineChapters(manga);
+          if (fetchedChapters && fetchedChapters.length > 0) {
+            const updatedManga: Manga = { ...manga, chapters: fetchedChapters };
+            setSelectedManga(updatedManga);
+            setOnlineMangaList((prev) =>
+              prev.map((m) => (m.id === manga.id ? updatedManga : m))
+            );
+          }
+        } catch (e) {
+          console.error('Falha ao sincronizar capítulos reais:', e);
+        } finally {
+          setIsLoadingChapters(false);
+        }
+      }
     }
   };
 
@@ -175,10 +190,20 @@ export function App() {
   const handleStartReading = async (manga: Manga, chapter: Chapter) => {
     if (!chapter.pages || chapter.pages.length === 0) {
       setIsLoadingPages(true);
-      const pages = await fetchOnlineChapterPages(manga, chapter);
-      const filledChapter: Chapter = { ...chapter, pages, pagesCount: pages.length };
-      setReadingState({ manga, chapter: filledChapter, initialPage: 0 });
-      setIsLoadingPages(false);
+      try {
+        const pages = await fetchOnlineChapterPages(manga, chapter);
+        const filledChapter: Chapter = { ...chapter, pages, pagesCount: pages.length };
+        const updatedManga: Manga = {
+          ...manga,
+          chapters: manga.chapters.map((c) => (c.id === chapter.id ? filledChapter : c))
+        };
+        setSelectedManga(updatedManga);
+        setReadingState({ manga: updatedManga, chapter: filledChapter, initialPage: 0 });
+      } catch (err) {
+        console.error('Falha ao abrir leitor com scans reais:', err);
+      } finally {
+        setIsLoadingPages(false);
+      }
     } else {
       setReadingState({ manga, chapter, initialPage: 0 });
     }
@@ -299,6 +324,7 @@ export function App() {
             onStartReading={(chapter) => handleStartReading(selectedManga, chapter)}
             isBookmarked={bookmarks.includes(selectedManga.id)}
             onToggleBookmark={(id) => toggleBookmark(id)}
+            isLoadingChapters={isLoadingChapters}
           />
         ) : (
           <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '1.5rem 1.5rem 5rem' }}>

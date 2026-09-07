@@ -409,6 +409,7 @@ export const Reader: React.FC<ReaderProps> = ({
                 <img
                   src={pageUrl}
                   alt={`Página ${idx + 1}`}
+                  referrerPolicy="no-referrer"
                   style={{
                     width: '100%',
                     height: 'auto',
@@ -501,6 +502,7 @@ export const Reader: React.FC<ReaderProps> = ({
             <img
               src={chapter.pages[currentPage]}
               alt={`Página ${currentPage + 1}`}
+              referrerPolicy="no-referrer"
               style={{
                 maxWidth: '100%',
                 maxHeight: '85vh',
@@ -539,6 +541,7 @@ export const Reader: React.FC<ReaderProps> = ({
               <img
                 src={chapter.pages[currentPage + 1]}
                 alt={`Página ${currentPage + 2}`}
+                referrerPolicy="no-referrer"
                 style={{
                   maxHeight: '85vh',
                   maxWidth: '48%',
@@ -566,6 +569,7 @@ export const Reader: React.FC<ReaderProps> = ({
             <img
               src={chapter.pages[currentPage]}
               alt={`Página ${currentPage + 1}`}
+              referrerPolicy="no-referrer"
               style={{
                 maxHeight: '85vh',
                 maxWidth: '48%',

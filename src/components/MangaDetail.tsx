@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Manga, Chapter, Review } from '../data/mangaData';
 import { ReviewsSection } from './ReviewsSection';
-import { BookOpen, Star, ArrowLeft, Bookmark, MessageSquare, Download } from 'lucide-react';
+import { BookOpen, Star, ArrowLeft, Bookmark, MessageSquare, Download, Loader2 } from 'lucide-react';
 import { downloadChapterZip } from '../utils/downloader';
 
 interface MangaDetailProps {
@@ -10,6 +10,7 @@ interface MangaDetailProps {
   onStartReading: (chapter: Chapter) => void;
   isBookmarked: boolean;
   onToggleBookmark: (mangaId: string) => void;
+  isLoadingChapters?: boolean;
 }
 
 export const MangaDetail: React.FC<MangaDetailProps> = ({
@@ -17,7 +18,8 @@ export const MangaDetail: React.FC<MangaDetailProps> = ({
   onBack,
   onStartReading,
   isBookmarked,
-  onToggleBookmark
+  onToggleBookmark,
+  isLoadingChapters = false
 }) => {
   const [reviewsList, setReviewsList] = useState<Review[]>(manga.reviews);
   const [downloadingChapterId, setDownloadingChapterId] = useState<string | null>(null);
@@ -260,6 +262,25 @@ export const MangaDetail: React.FC<MangaDetailProps> = ({
             {manga.chapters.length} Total
           </span>
         </div>
+
+        {isLoadingChapters && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '16px 20px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            color: '#C084FC',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            marginBottom: '1.25rem'
+          }}>
+            <Loader2 size={20} className="animate-spin" />
+            <span>Sincronizando capítulos reais e scans online em tempo real...</span>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gap: '12px' }}>
           {manga.chapters.map((ch) => (
