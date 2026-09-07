@@ -7,22 +7,22 @@ interface MangaCardProps {
   onSelect: (manga: Manga) => void;
   isBookmarked: boolean;
   onToggleBookmark: (mangaId: string, e: React.MouseEvent) => void;
+  onSelectChapter?: (manga: Manga, chapter: any) => void;
 }
 
 export const MangaCard: React.FC<MangaCardProps> = ({
   manga,
   onSelect,
   isBookmarked,
-  onToggleBookmark
+  onToggleBookmark,
+  onSelectChapter
 }) => {
   return (
     <div
-      onClick={() => onSelect(manga)}
       className="glass-card"
       style={{
         borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
-        cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -32,13 +32,17 @@ export const MangaCard: React.FC<MangaCardProps> = ({
       }}
     >
       {/* Cover Container with Hover Zoom */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        aspectRatio: '2/3',
-        overflow: 'hidden',
-        backgroundColor: '#0a0d14'
-      }}>
+      <div
+        onClick={() => onSelect(manga)}
+        style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '2/3',
+          overflow: 'hidden',
+          backgroundColor: '#0a0d14',
+          cursor: 'pointer'
+        }}
+      >
         <img
           src={manga.coverImage}
           alt={manga.title}
@@ -145,48 +149,37 @@ export const MangaCard: React.FC<MangaCardProps> = ({
         justifyContent: 'space-between'
       }}>
         <div>
-          <h3 style={{
-            fontSize: '1.05rem',
-            fontWeight: 700,
-            color: '#FFFFFF',
-            lineHeight: 1.3,
-            marginBottom: '6px',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden'
-          }}>
+          <h3
+            onClick={() => onSelect(manga)}
+            style={{
+              fontSize: '1.02rem',
+              fontWeight: 700,
+              color: '#FFFFFF',
+              lineHeight: 1.3,
+              marginBottom: '4px',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              cursor: 'pointer'
+            }}
+          >
             {manga.title}
           </h3>
 
           <p style={{
-            fontSize: '0.8rem',
+            fontSize: '0.78rem',
             color: 'var(--text-secondary)',
-            marginBottom: '10px'
+            marginBottom: '8px'
           }}>
             {manga.author}
           </p>
 
-          <p style={{
-            fontSize: '0.78rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.5,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            marginBottom: '12px'
-          }}>
-            {manga.synopsis}
-          </p>
-        </div>
-
-        <div>
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: '5px',
-            marginBottom: '14px'
+            marginBottom: '10px'
           }}>
             {manga.genres.slice(0, 2).map((g) => (
               <span key={g} className="badge-tag">
@@ -194,29 +187,33 @@ export const MangaCard: React.FC<MangaCardProps> = ({
               </span>
             ))}
           </div>
+        </div>
 
-          <div style={{
-            borderTop: '1px solid rgba(255, 255, 255, 0.07)',
-            paddingTop: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)'
-          }}>
-            <span>{manga.chapters.length} {manga.chapters.length === 1 ? 'Capítulo' : 'Capítulos'}</span>
-            <span style={{
-              color: 'var(--accent-emerald)',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              Ler agora →
-            </span>
-          </div>
+        {/* Kingofshojo Stylefiv Chapter Rows */}
+        <div>
+          <ul className="chfiv-list">
+            {manga.chapters.slice(0, 2).map((chapter) => (
+              <li key={chapter.id}>
+                <div
+                  className="chfiv-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectChapter) {
+                      onSelectChapter(manga, chapter);
+                    } else {
+                      onSelect(manga);
+                    }
+                  }}
+                >
+                  <span className="fivchap">Cap. {chapter.number}</span>
+                  <span className="fivtime">{chapter.releaseDate.includes('(') ? chapter.releaseDate.split('(')[0] : 'Disponível'}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
   );
 };
+

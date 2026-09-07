@@ -7,16 +7,11 @@ import { MangaDetail } from './components/MangaDetail';
 import { Reader } from './components/Reader';
 import { AboutModal } from './components/AboutModal';
 import { AchievementsModal } from './components/AchievementsModal';
-import {
-  BookOpen,
-  Flame,
-  Bookmark,
-  ShieldCheck,
-  ArrowRight,
-  PlayCircle,
-  Award,
-  Clock
-} from 'lucide-react';
+import { HeroSlider } from './components/HeroSlider';
+import { GenreRibbon } from './components/GenreRibbon';
+import { PopularToday } from './components/PopularToday';
+import { Sidebar } from './components/Sidebar';
+import { Bookmark, Sparkles } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'bookmarks' | 'about'>('catalog');
@@ -27,21 +22,21 @@ export function App() {
   
   const [bookmarks, setBookmarks] = useState<string[]>(() => {
     const saved = localStorage.getItem('mangator_bookmarks');
-    return saved ? JSON.parse(saved) : ['kaguya-hime'];
+    return saved ? JSON.parse(saved) : ['choju-giga'];
   });
 
   const [readingHistory, setReadingHistory] = useState<ReadingProgress | null>(() => {
     const saved = localStorage.getItem('mangator_history');
     if (saved) return JSON.parse(saved);
     return {
-      mangaId: 'kaguya-hime',
-      mangaTitle: 'O Conto da Princesa Kaguya',
-      mangaCover: '/manga/cover-kaguya.jpg',
-      chapterId: 'kaguya-ch-1',
+      mangaId: 'choju-giga',
+      mangaTitle: 'Chōjū-jinbutsu-giga (Pergaminhos dos Animais)',
+      mangaCover: '/manga/choju_cover.jpg',
+      chapterId: 'choju-ch-1',
       chapterNumber: 1,
-      chapterTitle: 'Capítulo 1: A Donzela que Nasceu do Bambu',
-      pageIndex: 2,
-      totalPages: 6,
+      chapterTitle: 'Pergaminho 1: O Sumô dos Sapos e Coelhos & As Festas dos Bichos',
+      pageIndex: 0,
+      totalPages: 5,
       updatedAt: Date.now()
     };
   });
@@ -105,8 +100,6 @@ export function App() {
       return true;
     });
   }, [activeTab, bookmarks, selectedGenre, searchQuery]);
-
-  const featuredManga = MANGA_DATA[0];
 
   const handleNextChapter = () => {
     if (!readingState) return;
@@ -186,287 +179,140 @@ export function App() {
         ) : (
           <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '1.5rem 1.5rem 5rem' }}>
             
-            {/* Quick Resume Reading Widget */}
-            {readingHistory && (
-              <div
-                onClick={() => {
-                  const targetManga = MANGA_DATA.find((m) => m.id === readingHistory.mangaId);
+            {/* Kingofshojo Structure 1: Hero Swiper Banner */}
+            {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
+              <HeroSlider
+                featuredMangaList={MANGA_DATA}
+                onSelectManga={(m) => setSelectedManga(m)}
+                onStartReading={(m) => setReadingState({ manga: m, chapter: m.chapters[0], initialPage: 0 })}
+              />
+            )}
+
+            {/* Kingofshojo Structure 2: Fast Genres Ribbon */}
+            {activeTab === 'catalog' && searchQuery === '' && (
+              <GenreRibbon
+                genres={allGenres.filter(g => g !== 'Todos')}
+                selectedGenre={selectedGenre}
+                onSelectGenre={(g) => setSelectedGenre(selectedGenre === g ? 'Todos' : g)}
+                onResetGenre={() => { setSelectedGenre('Todos'); setSearchQuery(''); }}
+              />
+            )}
+
+            {/* Kingofshojo Structure 3: Popular Today Carousel */}
+            {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
+              <PopularToday
+                mangaList={MANGA_DATA}
+                onSelectManga={(m) => setSelectedManga(m)}
+              />
+            )}
+
+            {/* Kingofshojo Structure 4 & 5: Main 2-Column Portal Layout */}
+            <div className="portal-layout">
+              {/* Left Column: Latest Updates & Catalog Releases (.postbody) */}
+              <div className="postbody">
+                <div className="releases-header">
+                  <h2>
+                    <span>{activeTab === 'bookmarks' ? 'Meus Favoritos' : 'Últimos Lançamentos'}</span>
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: 'var(--accent-emerald)',
+                      backgroundColor: 'rgba(0, 245, 160, 0.12)',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)',
+                      fontWeight: 700
+                    }}>
+                      {filteredManga.length} {filteredManga.length === 1 ? 'série' : 'séries'}
+                    </span>
+                  </h2>
+
+                  {selectedGenre !== 'Todos' && (
+                    <span
+                      onClick={() => setSelectedGenre('Todos')}
+                      className="vl-link"
+                    >
+                      Limpar filtro: {selectedGenre} ✕
+                    </span>
+                  )}
+                </div>
+
+                {/* Manga Cards Grid with Stylefiv Chapter rows */}
+                {filteredManga.length > 0 ? (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2rem'
+                  }}>
+                    {filteredManga.map((manga) => (
+                      <MangaCard
+                        key={manga.id}
+                        manga={manga}
+                        onSelect={(m) => setSelectedManga(m)}
+                        isBookmarked={bookmarks.includes(manga.id)}
+                        onToggleBookmark={(id, e) => toggleBookmark(id, e)}
+                        onSelectChapter={(m, chapter) => setReadingState({ manga: m, chapter, initialPage: 0 })}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '4rem 1.5rem',
+                    border: '1px dashed rgba(255, 255, 255, 0.12)',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.01)'
+                  }}>
+                    <Bookmark size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                    <h3 style={{ color: '#fff', marginBottom: '6px' }}>Nenhum mangá encontrado</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                      {activeTab === 'bookmarks'
+                        ? 'Você ainda não adicionou nenhum mangá aos favoritos.'
+                        : 'Tente buscar por outro termo ou selecione outro gênero.'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Portfolio Info Pill */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 18px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '10px',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  <Sparkles size={16} color="#00F5A0" />
+                  <span>
+                    Todas as páginas são scans reais restauradas para proporcionar uma experiência fiel e autêntica de leitura contínua.
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Sidebar with Popular Rankings & History */}
+              <Sidebar
+                mangaList={MANGA_DATA}
+                onSelectManga={(m) => setSelectedManga(m)}
+                readingHistory={readingHistory}
+                onResumeReading={(progress) => {
+                  const targetManga = MANGA_DATA.find((m) => m.id === progress.mangaId);
                   if (targetManga) {
-                    const targetChapter = targetManga.chapters.find((c) => c.id === readingHistory.chapterId) || targetManga.chapters[0];
+                    const targetChapter = targetManga.chapters.find((c) => c.id === progress.chapterId) || targetManga.chapters[0];
                     setReadingState({
                       manga: targetManga,
                       chapter: targetChapter,
-                      initialPage: readingHistory.pageIndex
+                      initialPage: progress.pageIndex
                     });
                   }
                 }}
-                className="glass-card"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 20px',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '2rem',
-                  cursor: 'pointer',
-                  border: '1px solid rgba(0, 245, 160, 0.3)',
-                  backgroundColor: 'rgba(10, 15, 25, 0.85)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <img
-                    src={readingHistory.mangaCover}
-                    alt={readingHistory.mangaTitle}
-                    style={{ width: '38px', height: '54px', borderRadius: '4px', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Clock size={13} color="#00F5A0" />
-                      <span style={{ fontSize: '0.72rem', color: '#00F5A0', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Continuar Lendo de Onde Parou
-                      </span>
-                    </div>
-                    <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 700, margin: '2px 0' }}>
-                      {readingHistory.mangaTitle} — Cap. {readingHistory.chapterNumber} (Pág. {readingHistory.pageIndex + 1}/{readingHistory.totalPages})
-                    </h4>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button
-                    className="glow-btn-primary"
-                    style={{ padding: '8px 16px', fontSize: '0.82rem' }}
-                  >
-                    <PlayCircle size={15} />
-                    Retomar Leitura
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Hero Showcase */}
-            {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
-              <section style={{
-                position: 'relative',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                marginBottom: '3rem',
-                backgroundColor: '#0c0f17',
-                border: '1px solid rgba(0, 245, 160, 0.25)',
-                boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 245, 160, 0.12)'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  backgroundImage: `url(${featuredManga.coverImage})`,
-                  backgroundPosition: 'center 25%',
-                  backgroundSize: 'cover',
-                  filter: 'blur(30px) brightness(0.22)',
-                  transform: 'scale(1.15)',
-                  pointerEvents: 'none'
-                }} />
-
-                <div style={{
-                  position: 'relative',
-                  zIndex: 2,
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(280px, 1fr) 280px',
-                  gap: '2.5rem',
-                  padding: '3rem',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                      <span className="badge-tag accent">
-                        <Flame size={13} color="#00F5A0" /> DESTAQUE DA SEMANA
-                      </span>
-                      <span className="badge-tag public-domain">
-                        <ShieldCheck size={13} /> 100% Domínio Público
-                      </span>
-                    </div>
-
-                    <h1 style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: '3rem',
-                      fontWeight: 900,
-                      lineHeight: 1.1,
-                      color: '#fff',
-                      marginBottom: '10px',
-                      letterSpacing: '-0.02em'
-                    }}>
-                      {featuredManga.title}
-                    </h1>
-
-                    <p style={{
-                      fontSize: '1rem',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.6,
-                      maxWidth: '680px',
-                      marginBottom: '1.8rem'
-                    }}>
-                      {featuredManga.synopsis}
-                    </p>
-
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => setReadingState({ manga: featuredManga, chapter: featuredManga.chapters[0], initialPage: 0 })}
-                        className="glow-btn-primary"
-                        style={{ padding: '14px 28px', fontSize: '1rem' }}
-                      >
-                        <BookOpen size={20} />
-                        Ler Agora (Capítulo 1)
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedManga(featuredManga)}
-                        className="glow-btn-secondary"
-                        style={{ padding: '14px 22px' }}
-                      >
-                        Ver Detalhes da Obra
-                        <ArrowRight size={16} />
-                      </button>
-
-                      <button
-                        onClick={() => setIsAchievementsOpen(true)}
-                        className="glow-btn-secondary"
-                        style={{ padding: '14px 20px' }}
-                      >
-                        <Award size={18} color="#00F5A0" />
-                        Conquistas
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Hero Floating 3D Cover */}
-                  <div
-                    onClick={() => setSelectedManga(featuredManga)}
-                    style={{
-                      cursor: 'pointer',
-                      borderRadius: 'var(--radius-md)',
-                      overflow: 'hidden',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(0, 245, 160, 0.3)',
-                      border: '2px solid rgba(0, 245, 160, 0.4)',
-                      transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                      maxHeight: '380px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-6px) scale(1.03)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0) scale(1)')}
-                  >
-                    <img
-                      src={featuredManga.coverImage}
-                      alt={featuredManga.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                </div>
-              </section>
-            )}
-
-            {/* Filter Bar */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              marginBottom: '2rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-              paddingBottom: '1.2rem'
-            }}>
-              <div>
-                <h2 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1.6rem',
-                  fontWeight: 800,
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}>
-                  {activeTab === 'bookmarks' ? 'Meus Mangás Salvos' : 'Catálogo de Mangás'}
-                  <span style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--accent-emerald)',
-                    backgroundColor: 'rgba(0, 245, 160, 0.1)',
-                    padding: '2px 10px',
-                    borderRadius: 'var(--radius-full)',
-                    fontWeight: 600
-                  }}>
-                    {filteredManga.length} {filteredManga.length === 1 ? 'obra' : 'obras'}
-                  </span>
-                </h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {activeTab === 'bookmarks'
-                    ? 'Obras que você favoritou para ler ou acompanhar.'
-                    : 'Grandes clássicos da literatura e pioneiros do mangá sob domínio público mundial.'}
-                </p>
-              </div>
-
-              {/* Genre Pills */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {allGenres.map((genre) => (
-                  <button
-                    key={genre}
-                    onClick={() => setSelectedGenre(genre)}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: 'var(--radius-full)',
-                      border: selectedGenre === genre
-                        ? '1px solid #00F5A0'
-                        : '1px solid rgba(255, 255, 255, 0.08)',
-                      backgroundColor: selectedGenre === genre
-                        ? 'rgba(0, 245, 160, 0.15)'
-                        : 'rgba(255, 255, 255, 0.03)',
-                      color: selectedGenre === genre ? '#00F5A0' : 'var(--text-secondary)',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {genre}
-                  </button>
-                ))}
-              </div>
+              />
             </div>
-
-            {/* Grid of Manga Cards */}
-            {filteredManga.length > 0 ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                gap: '1.8rem'
-              }}>
-                {filteredManga.map((manga) => (
-                  <MangaCard
-                    key={manga.id}
-                    manga={manga}
-                    onSelect={(m) => setSelectedManga(m)}
-                    isBookmarked={bookmarks.includes(manga.id)}
-                    onToggleBookmark={(id, e) => toggleBookmark(id, e)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div style={{
-                textAlign: 'center',
-                padding: '4rem 1.5rem',
-                border: '1px dashed rgba(255, 255, 255, 0.12)',
-                borderRadius: 'var(--radius-lg)',
-                backgroundColor: 'rgba(255, 255, 255, 0.01)'
-              }}>
-                <Bookmark size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ color: '#fff', marginBottom: '6px' }}>Nenhum mangá encontrado</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                  {activeTab === 'bookmarks'
-                    ? 'Você ainda não adicionou nenhum mangá aos favoritos.'
-                    : 'Tente buscar por outro termo ou selecione outro gênero.'}
-                </p>
-              </div>
-            )}
           </div>
         )}
       </main>
+
 
       {/* Footer */}
       <footer style={{
