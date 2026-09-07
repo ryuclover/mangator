@@ -112,14 +112,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontWeight: 900,
                 fontSize: '1.45rem',
                 letterSpacing: '-0.02em',
-                background: isMode2
-                  ? 'linear-gradient(135deg, #FFFFFF 30%, #C084FC 100%)'
-                  : 'linear-gradient(135deg, #FFFFFF 30%, #00F5A0 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                lineHeight: 1
+                color: '#FFFFFF',
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center'
               }}>
-                MANGATOR
+                MANGA
+                <span style={{
+                  color: isMode2 ? '#C084FC' : '#00F5A0',
+                  textShadow: isMode2 ? '0 0 16px rgba(192, 132, 252, 0.6)' : '0 0 16px rgba(0, 245, 160, 0.5)'
+                }}>
+                  TOR
+                </span>
               </span>
               <span
                 onClick={handleIconClick}
