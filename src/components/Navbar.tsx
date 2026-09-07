@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Compass, Bookmark, Search, Info, ShieldCheck } from 'lucide-react';
+import { Compass, Bookmark, Search, Info, ShieldCheck, Zap } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'catalog' | 'bookmarks' | 'about';
@@ -8,6 +8,8 @@ interface NavbarProps {
   onSearchChange: (q: string) => void;
   onOpenAboutModal: () => void;
   bookmarksCount: number;
+  isMode2: boolean;
+  onToggleMode2: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,6 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   onOpenAboutModal,
   bookmarksCount,
+  isMode2,
+  onToggleMode2,
 }) => {
   const logos = [
     { id: 'polygon', src: '/brand/logo-polygon.jpg', label: 'Polygon Tech' },
@@ -27,8 +31,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const [currentLogoIdx, setCurrentLogoIdx] = useState(0);
 
-  const toggleNextLogo = () => {
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentLogoIdx((prev) => (prev + 1) % logos.length);
+    onToggleMode2();
   };
 
   return (
@@ -38,8 +44,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       zIndex: 100,
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      background: 'rgba(8, 10, 15, 0.85)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+      background: isMode2 ? 'rgba(18, 10, 30, 0.92)' : 'rgba(8, 10, 15, 0.85)',
+      borderBottom: isMode2 ? '1px solid rgba(168, 85, 247, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
       padding: '0 1.5rem',
       transition: 'all 0.3s ease'
     }}>
@@ -56,28 +62,26 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
              onClick={() => onSelectTab('catalog')}>
           <div
-            title="Clique para alternar o estilo do ícone Mangator!"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNextLogo();
-            }}
+            title="CLIQUE AQUI PARA ALTERNAR ENTRE MODO 1 (DOMÍNIO PÚBLICO) E MODO 2 (SCRAPING ONLINE MANGAFIRE EM TEMPO REAL)!"
+            onClick={handleIconClick}
             style={{
               position: 'relative',
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
               overflow: 'hidden',
-              border: '2px solid rgba(0, 245, 160, 0.4)',
-              boxShadow: '0 0 15px rgba(0, 245, 160, 0.25)',
-              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              border: isMode2 ? '2px solid #C084FC' : '2px solid rgba(0, 245, 160, 0.4)',
+              boxShadow: isMode2 ? '0 0 20px rgba(168, 85, 247, 0.6), 0 0 10px #A855F7' : '0 0 15px rgba(0, 245, 160, 0.25)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: '#05070A',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              transform: isMode2 ? 'scale(1.05)' : 'scale(1)'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.08) rotate(3deg)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) rotate(0deg)')}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.12) rotate(4deg)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = isMode2 ? 'scale(1.05) rotate(0deg)' : 'scale(1) rotate(0deg)')}
           >
             <img
               src={logos[currentLogoIdx].src}
@@ -90,13 +94,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
             <div style={{
               position: 'absolute',
-              bottom: 1,
-              right: 1,
-              width: '8px',
-              height: '8px',
+              bottom: 2,
+              right: 2,
+              width: '10px',
+              height: '10px',
               borderRadius: '50%',
-              backgroundColor: '#00F5A0',
-              border: '1px solid #000'
+              backgroundColor: isMode2 ? '#C084FC' : '#00F5A0',
+              border: '2px solid #000',
+              boxShadow: isMode2 ? '0 0 8px #C084FC' : '0 0 6px #00F5A0'
             }} />
           </div>
 
@@ -107,37 +112,63 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontWeight: 900,
                 fontSize: '1.45rem',
                 letterSpacing: '-0.02em',
-                background: 'linear-gradient(135deg, #FFFFFF 30%, #00F5A0 100%)',
+                background: isMode2
+                  ? 'linear-gradient(135deg, #FFFFFF 30%, #C084FC 100%)'
+                  : 'linear-gradient(135deg, #FFFFFF 30%, #00F5A0 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 lineHeight: 1
               }}>
                 MANGATOR
               </span>
-              <span style={{
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                backgroundColor: 'rgba(0, 245, 160, 0.15)',
-                color: '#00F5A0',
-                border: '1px solid rgba(0, 245, 160, 0.3)',
-                padding: '2px 7px',
-                borderRadius: '6px'
-              }}>
-                PORTFÓLIO
+              <span
+                onClick={handleIconClick}
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  backgroundColor: isMode2 ? 'rgba(168, 85, 247, 0.25)' : 'rgba(0, 245, 160, 0.15)',
+                  color: isMode2 ? '#C084FC' : '#00F5A0',
+                  border: isMode2 ? '1px solid rgba(192, 132, 252, 0.6)' : '1px solid rgba(0, 245, 160, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: isMode2 ? '0 0 12px rgba(168, 85, 247, 0.4)' : 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {isMode2 ? (
+                  <>
+                    <Zap size={11} fill="#C084FC" />
+                    MODO 2 (ONLINE DB)
+                  </>
+                ) : (
+                  'MODO 1 (ACERVO)'
+                )}
               </span>
             </div>
             <div style={{
               fontSize: '0.73rem',
-              color: 'var(--text-muted)',
+              color: isMode2 ? '#E9D5FF' : 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               marginTop: '2px'
             }}>
-              <ShieldCheck size={11} color="#10B981" />
-              <span>Domínio Público & Experiência HD</span>
+              {isMode2 ? (
+                <>
+                  <Zap size={11} color="#C084FC" />
+                  <span>Conectado ao Acervo Online (Clique no ícone p/ alternar)</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={11} color="#10B981" />
+                  <span>Domínio Público Autêntico (Clique no ícone p/ ativar Modo 2)</span>
+                </>
+              )}
             </div>
           </div>
         </div>

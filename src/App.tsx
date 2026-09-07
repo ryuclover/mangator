@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MANGA_DATA, INITIAL_ACHIEVEMENTS } from './data/mangaData';
 import type { Manga, Chapter, ReadingProgress } from './data/mangaData';
 import { Navbar } from './components/Navbar';
@@ -11,7 +11,8 @@ import { HeroSlider } from './components/HeroSlider';
 import { GenreRibbon } from './components/GenreRibbon';
 import { PopularToday } from './components/PopularToday';
 import { Sidebar } from './components/Sidebar';
-import { Bookmark, Sparkles } from 'lucide-react';
+import { Bookmark, Sparkles, Loader2, Zap } from 'lucide-react';
+import { fetchOnlineManga, fetchOnlineChapters, fetchOnlineChapterPages } from './services/onlineMangaService';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'bookmarks' | 'about'>('catalog');
@@ -19,6 +20,39 @@ export function App() {
   const [selectedGenre, setSelectedGenre] = useState<string>('Todos');
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [readingState, setReadingState] = useState<{ manga: Manga; chapter: Chapter; initialPage?: number } | null>(null);
+  const [isLoadingChapters, setIsLoadingChapters] = useState(false);
+  const [isLoadingPages, setIsLoadingPages] = useState(false);
+
+  // MODO 2: Alterna entre Acervo Histórico e Conexão com Banco de Mangás Online
+  const [isMode2, setIsMode2] = useState<boolean>(() => {
+    return localStorage.getItem('mangator_mode2') === 'true';
+  });
+  const [onlineMangaList, setOnlineMangaList] = useState<Manga[]>([]);
+  const [isLoadingOnline, setIsLoadingOnline] = useState(false);
+
+  const toggleMode2 = () => {
+    setIsMode2((prev) => {
+      const next = !prev;
+      localStorage.setItem('mangator_mode2', String(next));
+      return next;
+    });
+  };
+
+  // Carrega catálogo online quando Modo 2 estiver ativo ou quando o usuário pesquisar
+  useEffect(() => {
+    if (!isMode2) return;
+    let isMounted = true;
+    setIsLoadingOnline(true);
+    fetchOnlineManga(searchQuery).then((results) => {
+      if (isMounted) {
+        setOnlineMangaList(results);
+        setIsLoadingOnline(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [isMode2, searchQuery]);
   
   const [bookmarks, setBookmarks] = useState<string[]>(() => {
     const saved = localStorage.getItem('mangator_bookmarks');
@@ -74,23 +108,26 @@ export function App() {
     localStorage.setItem('mangator_history', JSON.stringify(progress));
   };
 
+  // Active dataset depends on Mode
+  const activeDataset = isMode2 ? onlineMangaList : MANGA_DATA;
+
   // Extract all unique genres
   const allGenres = useMemo(() => {
     const genres = new Set<string>();
-    MANGA_DATA.forEach((m) => m.genres.forEach((g) => genres.add(g)));
+    activeDataset.forEach((m) => m.genres.forEach((g) => genres.add(g)));
     return ['Todos', ...Array.from(genres)];
-  }, []);
+  }, [activeDataset]);
 
   // Filtered manga list
   const filteredManga = useMemo(() => {
-    return MANGA_DATA.filter((m) => {
+    return activeDataset.filter((m) => {
       if (activeTab === 'bookmarks' && !bookmarks.includes(m.id)) {
         return false;
       }
       if (selectedGenre !== 'Todos' && !m.genres.includes(selectedGenre)) {
         return false;
       }
-      if (searchQuery.trim() !== '') {
+      if (!isMode2 && searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase();
         const matchTitle = m.title.toLowerCase().includes(query);
         const matchAuthor = m.author.toLowerCase().includes(query);
@@ -99,31 +136,52 @@ export function App() {
       }
       return true;
     });
-  }, [activeTab, bookmarks, selectedGenre, searchQuery]);
+  }, [activeDataset, activeTab, bookmarks, selectedGenre, searchQuery, isMode2]);
 
-  const handleNextChapter = () => {
+  // Handler to open Manga details (fetches chapters if online)
+  const handleSelectManga = async (manga: Manga) => {
+    if (manga.id.startsWith('online-') && manga.chapters.length === 0) {
+      setIsLoadingChapters(true);
+      setSelectedManga(manga);
+      const fetchedChapters = await fetchOnlineChapters(manga.id);
+      const updatedManga: Manga = { ...manga, chapters: fetchedChapters };
+      setSelectedManga(updatedManga);
+      setIsLoadingChapters(false);
+    } else {
+      setSelectedManga(manga);
+    }
+  };
+
+  // Handler to open reader on chapter (fetches page scans if online)
+  const handleStartReading = async (manga: Manga, chapter: Chapter) => {
+    if (manga.id.startsWith('online-') && (!chapter.pages || chapter.pages.length === 0)) {
+      setIsLoadingPages(true);
+      const pages = await fetchOnlineChapterPages(chapter.id);
+      const filledChapter: Chapter = { ...chapter, pages, pagesCount: pages.length };
+      setReadingState({ manga, chapter: filledChapter, initialPage: 0 });
+      setIsLoadingPages(false);
+    } else {
+      setReadingState({ manga, chapter, initialPage: 0 });
+    }
+  };
+
+  const handleNextChapter = async () => {
     if (!readingState) return;
     const { manga, chapter } = readingState;
     const currentIndex = manga.chapters.findIndex((c) => c.id === chapter.id);
     if (currentIndex < manga.chapters.length - 1) {
-      setReadingState({
-        manga,
-        chapter: manga.chapters[currentIndex + 1],
-        initialPage: 0
-      });
+      const nextCh = manga.chapters[currentIndex + 1];
+      await handleStartReading(manga, nextCh);
     }
   };
 
-  const handlePrevChapter = () => {
+  const handlePrevChapter = async () => {
     if (!readingState) return;
     const { manga, chapter } = readingState;
     const currentIndex = manga.chapters.findIndex((c) => c.id === chapter.id);
     if (currentIndex > 0) {
-      setReadingState({
-        manga,
-        chapter: manga.chapters[currentIndex - 1],
-        initialPage: 0
-      });
+      const prevCh = manga.chapters[currentIndex - 1];
+      await handleStartReading(manga, prevCh);
     }
   };
 
@@ -149,6 +207,30 @@ export function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Loading Overlay when fetching pages */}
+      {(isLoadingPages || isLoadingChapters) && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(5, 8, 14, 0.85)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px'
+        }}>
+          <Loader2 size={38} color="#C084FC" className="animate-spin" />
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem' }}>
+            {isLoadingPages ? 'Carregando páginas do capítulo online...' : 'Buscando lista de capítulos no banco online...'}
+          </div>
+          <div style={{ color: '#C084FC', fontSize: '0.8rem' }}>
+            Requisição em tempo real via MangaFire/API Network
+          </div>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -164,27 +246,72 @@ export function App() {
         onSearchChange={setSearchQuery}
         onOpenAboutModal={() => setIsAboutOpen(true)}
         bookmarksCount={bookmarks.length}
+        isMode2={isMode2}
+        onToggleMode2={toggleMode2}
       />
 
       {/* Main Content */}
       <main style={{ flex: 1 }}>
+        {/* Banner Indicativo de Modo */}
+        {isMode2 && (
+          <div style={{
+            backgroundColor: 'rgba(168, 85, 247, 0.12)',
+            borderBottom: '1px solid rgba(168, 85, 247, 0.3)',
+            padding: '8px 1.5rem',
+            textAlign: 'center',
+            fontSize: '0.82rem',
+            color: '#E9D5FF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}>
+            <Zap size={14} color="#C084FC" />
+            <span>
+              <strong>MODO 2 ATIVADO:</strong> Conexão e requisições online em tempo real ativas! Pesquise qualquer obra como <em>One Piece, Berserk, Frieren, Solo Leveling</em>. Clique no ícone do mascote para retornar ao Modo 1.
+            </span>
+          </div>
+        )}
+
         {selectedManga ? (
           <MangaDetail
             manga={selectedManga}
             onBack={() => setSelectedManga(null)}
-            onStartReading={(chapter) => setReadingState({ manga: selectedManga, chapter, initialPage: 0 })}
+            onStartReading={(chapter) => handleStartReading(selectedManga, chapter)}
             isBookmarked={bookmarks.includes(selectedManga.id)}
             onToggleBookmark={(id) => toggleBookmark(id)}
           />
         ) : (
           <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '1.5rem 1.5rem 5rem' }}>
+            {/* Loading indicator for Mode 2 items */}
+            {isLoadingOnline && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                padding: '1.5rem',
+                color: '#C084FC',
+                fontWeight: 600
+              }}>
+                <Loader2 size={20} className="animate-spin" />
+                <span>Conectando e extraindo catálogo online...</span>
+              </div>
+            )}
+
             
             {/* Kingofshojo Structure 1: Hero Swiper Banner */}
             {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
               <HeroSlider
-                featuredMangaList={MANGA_DATA}
-                onSelectManga={(m) => setSelectedManga(m)}
-                onStartReading={(m) => setReadingState({ manga: m, chapter: m.chapters[0], initialPage: 0 })}
+                featuredMangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
+                onStartReading={(m) => {
+                  if (m.chapters.length > 0) {
+                    handleStartReading(m, m.chapters[0]);
+                  } else {
+                    handleSelectManga(m);
+                  }
+                }}
               />
             )}
 
@@ -201,8 +328,8 @@ export function App() {
             {/* Kingofshojo Structure 3: Popular Today Carousel */}
             {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
               <PopularToday
-                mangaList={MANGA_DATA}
-                onSelectManga={(m) => setSelectedManga(m)}
+                mangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
               />
             )}
 
@@ -212,11 +339,11 @@ export function App() {
               <div className="postbody">
                 <div className="releases-header">
                   <h2>
-                    <span>{activeTab === 'bookmarks' ? 'Meus Favoritos' : 'Últimos Lançamentos'}</span>
+                    <span>{activeTab === 'bookmarks' ? 'Meus Favoritos' : isMode2 ? 'Catálogo Online em Tempo Real' : 'Últimos Lançamentos'}</span>
                     <span style={{
                       fontSize: '0.75rem',
-                      color: 'var(--accent-emerald)',
-                      backgroundColor: 'rgba(0, 245, 160, 0.12)',
+                      color: isMode2 ? '#C084FC' : 'var(--accent-emerald)',
+                      backgroundColor: isMode2 ? 'rgba(168, 85, 247, 0.15)' : 'rgba(0, 245, 160, 0.12)',
                       padding: '2px 8px',
                       borderRadius: 'var(--radius-full)',
                       fontWeight: 700
@@ -247,10 +374,10 @@ export function App() {
                       <MangaCard
                         key={manga.id}
                         manga={manga}
-                        onSelect={(m) => setSelectedManga(m)}
+                        onSelect={(m) => handleSelectManga(m)}
                         isBookmarked={bookmarks.includes(manga.id)}
                         onToggleBookmark={(id, e) => toggleBookmark(id, e)}
-                        onSelectChapter={(m, chapter) => setReadingState({ manga: m, chapter, initialPage: 0 })}
+                        onSelectChapter={(m, chapter) => handleStartReading(m, chapter)}
                       />
                     ))}
                   </div>
@@ -284,27 +411,29 @@ export function App() {
                   fontSize: '0.8rem',
                   color: 'var(--text-secondary)'
                 }}>
-                  <Sparkles size={16} color="#00F5A0" />
+                  {isMode2 ? <Zap size={16} color="#C084FC" /> : <Sparkles size={16} color="#00F5A0" />}
                   <span>
-                    Todas as páginas são scans reais restauradas para proporcionar uma experiência fiel e autêntica de leitura contínua.
+                    {isMode2
+                      ? 'Conexão viva com a rede de mangás online ativa. Requisições e leitura acontecem em tempo real.'
+                      : 'Todas as páginas são scans reais restauradas para proporcionar uma experiência fiel e autêntica de leitura contínua.'}
                   </span>
                 </div>
               </div>
 
               {/* Right Column: Sidebar with Popular Rankings & History */}
               <Sidebar
-                mangaList={MANGA_DATA}
-                onSelectManga={(m) => setSelectedManga(m)}
+                mangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
                 readingHistory={readingHistory}
                 onResumeReading={(progress) => {
-                  const targetManga = MANGA_DATA.find((m) => m.id === progress.mangaId);
+                  const targetManga = activeDataset.find((m) => m.id === progress.mangaId) || MANGA_DATA.find((m) => m.id === progress.mangaId);
                   if (targetManga) {
                     const targetChapter = targetManga.chapters.find((c) => c.id === progress.chapterId) || targetManga.chapters[0];
-                    setReadingState({
-                      manga: targetManga,
-                      chapter: targetChapter,
-                      initialPage: progress.pageIndex
-                    });
+                    if (targetChapter) {
+                      handleStartReading(targetManga, targetChapter);
+                    } else {
+                      handleSelectManga(targetManga);
+                    }
                   }
                 }}
               />
