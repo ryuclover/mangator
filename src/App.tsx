@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MANGA_DATA, INITIAL_ACHIEVEMENTS } from './data/mangaData';
 import type { Manga, Chapter, ReadingProgress } from './data/mangaData';
 import { Navbar } from './components/Navbar';
@@ -7,16 +7,12 @@ import { MangaDetail } from './components/MangaDetail';
 import { Reader } from './components/Reader';
 import { AboutModal } from './components/AboutModal';
 import { AchievementsModal } from './components/AchievementsModal';
-import {
-  BookOpen,
-  Flame,
-  Bookmark,
-  ShieldCheck,
-  ArrowRight,
-  PlayCircle,
-  Award,
-  Clock
-} from 'lucide-react';
+import { HeroSlider } from './components/HeroSlider';
+import { GenreRibbon } from './components/GenreRibbon';
+import { PopularToday } from './components/PopularToday';
+import { Sidebar } from './components/Sidebar';
+import { Bookmark, Sparkles, Loader2, Zap, Flame, LayoutGrid, List } from 'lucide-react';
+import { fetchOnlineManga, fetchOnlineChapters, fetchOnlineChapterPages } from './services/onlineMangaService';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<'catalog' | 'bookmarks' | 'about'>('catalog');
@@ -24,24 +20,64 @@ export function App() {
   const [selectedGenre, setSelectedGenre] = useState<string>('Todos');
   const [selectedManga, setSelectedManga] = useState<Manga | null>(null);
   const [readingState, setReadingState] = useState<{ manga: Manga; chapter: Chapter; initialPage?: number } | null>(null);
+  const [isLoadingChapters, setIsLoadingChapters] = useState(false);
+  const [isLoadingPages, setIsLoadingPages] = useState(false);
+
+  // MODO 2: Alterna entre Acervo Histórico e Conexão com Banco de Mangás Online (MangaFire Live)
+  const [isMode2, setIsMode2] = useState<boolean>(() => {
+    return localStorage.getItem('mangator_mode2') === 'true';
+  });
+  const [onlineMangaList, setOnlineMangaList] = useState<Manga[]>([]);
+  const [isLoadingOnline, setIsLoadingOnline] = useState(false);
+  const [timeframe, setTimeframe] = useState<1 | 7 | 30 | 365>(1);
+  const [mangaTypeFilter, setMangaTypeFilter] = useState<'all' | 'manga' | 'manhwa' | 'manhua'>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'rows'>('grid');
+
+  const toggleMode2 = () => {
+    setIsMode2((prev) => {
+      const next = !prev;
+      localStorage.setItem('mangator_mode2', String(next));
+      return next;
+    });
+  };
+
+  // Carrega catálogo online quando Modo 2 estiver ativo ou quando o usuário pesquisar ou alternar filtros
+  useEffect(() => {
+    if (!isMode2) return;
+    let isMounted = true;
+    setIsLoadingOnline(true);
+    fetchOnlineManga(
+      searchQuery,
+      timeframe,
+      mangaTypeFilter === 'all' ? undefined : mangaTypeFilter
+    ).then((results) => {
+      if (isMounted) {
+        setOnlineMangaList(results);
+        setIsLoadingOnline(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [isMode2, searchQuery, timeframe, mangaTypeFilter]);
   
   const [bookmarks, setBookmarks] = useState<string[]>(() => {
     const saved = localStorage.getItem('mangator_bookmarks');
-    return saved ? JSON.parse(saved) : ['kaguya-hime'];
+    return saved ? JSON.parse(saved) : ['choju-giga'];
   });
 
   const [readingHistory, setReadingHistory] = useState<ReadingProgress | null>(() => {
     const saved = localStorage.getItem('mangator_history');
     if (saved) return JSON.parse(saved);
     return {
-      mangaId: 'kaguya-hime',
-      mangaTitle: 'O Conto da Princesa Kaguya',
-      mangaCover: '/manga/cover-kaguya.jpg',
-      chapterId: 'kaguya-ch-1',
+      mangaId: 'choju-giga',
+      mangaTitle: 'Chōjū-jinbutsu-giga (Pergaminhos dos Animais)',
+      mangaCover: '/manga/choju_cover.jpg',
+      chapterId: 'choju-ch-1',
       chapterNumber: 1,
-      chapterTitle: 'Capítulo 1: A Donzela que Nasceu do Bambu',
-      pageIndex: 2,
-      totalPages: 6,
+      chapterTitle: 'Pergaminho 1: O Sumô dos Sapos e Coelhos & As Festas dos Bichos',
+      pageIndex: 0,
+      totalPages: 5,
       updatedAt: Date.now()
     };
   });
@@ -79,58 +115,117 @@ export function App() {
     localStorage.setItem('mangator_history', JSON.stringify(progress));
   };
 
+  // Active dataset depends on Mode
+  const activeDataset = isMode2 ? onlineMangaList : MANGA_DATA;
+
   // Extract all unique genres
   const allGenres = useMemo(() => {
     const genres = new Set<string>();
-    MANGA_DATA.forEach((m) => m.genres.forEach((g) => genres.add(g)));
+    activeDataset.forEach((m) => m.genres.forEach((g) => genres.add(g)));
     return ['Todos', ...Array.from(genres)];
-  }, []);
+  }, [activeDataset]);
 
   // Filtered manga list
   const filteredManga = useMemo(() => {
-    return MANGA_DATA.filter((m) => {
+    return activeDataset.filter((m) => {
       if (activeTab === 'bookmarks' && !bookmarks.includes(m.id)) {
         return false;
       }
-      if (selectedGenre !== 'Todos' && !m.genres.includes(selectedGenre)) {
-        return false;
-      }
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase();
-        const matchTitle = m.title.toLowerCase().includes(query);
-        const matchAuthor = m.author.toLowerCase().includes(query);
-        const matchGenre = m.genres.some((g) => g.toLowerCase().includes(query));
-        return matchTitle || matchAuthor || matchGenre;
+      if (isMode2) {
+        if (mangaTypeFilter !== 'all' && m.mangaType && m.mangaType !== mangaTypeFilter) {
+          return false;
+        }
+        if (searchQuery.trim() !== '') {
+          const query = searchQuery.toLowerCase();
+          const matchTitle = m.title.toLowerCase().includes(query);
+          const matchSlug = m.slug?.toLowerCase().includes(query);
+          return matchTitle || matchSlug;
+        }
+      } else {
+        if (selectedGenre !== 'Todos' && !m.genres.includes(selectedGenre)) {
+          return false;
+        }
+        if (searchQuery.trim() !== '') {
+          const query = searchQuery.toLowerCase();
+          const matchTitle = m.title.toLowerCase().includes(query);
+          const matchAuthor = m.author.toLowerCase().includes(query);
+          const matchGenre = m.genres.some((g) => g.toLowerCase().includes(query));
+          return matchTitle || matchAuthor || matchGenre;
+        }
       }
       return true;
     });
-  }, [activeTab, bookmarks, selectedGenre, searchQuery]);
+  }, [activeDataset, activeTab, bookmarks, selectedGenre, searchQuery, isMode2, mangaTypeFilter]);
 
-  const featuredManga = MANGA_DATA[0];
+  // Handler to open Manga details (fetches chapters if online)
+  const handleSelectManga = async (manga: Manga) => {
+    setSelectedManga(manga);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const handleNextChapter = () => {
+    if (isMode2) {
+      const hasRealChapters = manga.chapters.some(
+        (c) => !c.id.startsWith('mf-ch-') && !c.id.startsWith('ch-default')
+      );
+      if (!hasRealChapters) {
+        setIsLoadingChapters(true);
+        try {
+          const fetchedChapters = await fetchOnlineChapters(manga);
+          if (fetchedChapters && fetchedChapters.length > 0) {
+            const updatedManga: Manga = { ...manga, chapters: fetchedChapters };
+            setSelectedManga(updatedManga);
+            setOnlineMangaList((prev) =>
+              prev.map((m) => (m.id === manga.id ? updatedManga : m))
+            );
+          }
+        } catch (e) {
+          console.error('Falha ao sincronizar capítulos reais:', e);
+        } finally {
+          setIsLoadingChapters(false);
+        }
+      }
+    }
+  };
+
+  // Handler to open reader on chapter (fetches page scans if online)
+  const handleStartReading = async (manga: Manga, chapter: Chapter) => {
+    if (!chapter.pages || chapter.pages.length === 0) {
+      setIsLoadingPages(true);
+      try {
+        const pages = await fetchOnlineChapterPages(manga, chapter);
+        const filledChapter: Chapter = { ...chapter, pages, pagesCount: pages.length };
+        const updatedManga: Manga = {
+          ...manga,
+          chapters: manga.chapters.map((c) => (c.id === chapter.id ? filledChapter : c))
+        };
+        setSelectedManga(updatedManga);
+        setReadingState({ manga: updatedManga, chapter: filledChapter, initialPage: 0 });
+      } catch (err) {
+        console.error('Falha ao abrir leitor com scans reais:', err);
+      } finally {
+        setIsLoadingPages(false);
+      }
+    } else {
+      setReadingState({ manga, chapter, initialPage: 0 });
+    }
+  };
+
+  const handleNextChapter = async () => {
     if (!readingState) return;
     const { manga, chapter } = readingState;
     const currentIndex = manga.chapters.findIndex((c) => c.id === chapter.id);
     if (currentIndex < manga.chapters.length - 1) {
-      setReadingState({
-        manga,
-        chapter: manga.chapters[currentIndex + 1],
-        initialPage: 0
-      });
+      const nextCh = manga.chapters[currentIndex + 1];
+      await handleStartReading(manga, nextCh);
     }
   };
 
-  const handlePrevChapter = () => {
+  const handlePrevChapter = async () => {
     if (!readingState) return;
     const { manga, chapter } = readingState;
     const currentIndex = manga.chapters.findIndex((c) => c.id === chapter.id);
     if (currentIndex > 0) {
-      setReadingState({
-        manga,
-        chapter: manga.chapters[currentIndex - 1],
-        initialPage: 0
-      });
+      const prevCh = manga.chapters[currentIndex - 1];
+      await handleStartReading(manga, prevCh);
     }
   };
 
@@ -156,6 +251,30 @@ export function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Loading Overlay when fetching pages */}
+      {(isLoadingPages || isLoadingChapters) && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(5, 8, 14, 0.85)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '14px'
+        }}>
+          <Loader2 size={38} color="#00F5A0" className="animate-spin" />
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem' }}>
+            {isLoadingPages ? 'Carregando páginas do capítulo online...' : 'Buscando lista de capítulos no banco online...'}
+          </div>
+          <div style={{ color: '#00F5A0', fontSize: '0.8rem' }}>
+            Requisição em tempo real via MangaFire/API Network
+          </div>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -171,6 +290,8 @@ export function App() {
         onSearchChange={setSearchQuery}
         onOpenAboutModal={() => setIsAboutOpen(true)}
         bookmarksCount={bookmarks.length}
+        isMode2={isMode2}
+        onToggleMode2={toggleMode2}
       />
 
       {/* Main Content */}
@@ -179,294 +300,385 @@ export function App() {
           <MangaDetail
             manga={selectedManga}
             onBack={() => setSelectedManga(null)}
-            onStartReading={(chapter) => setReadingState({ manga: selectedManga, chapter, initialPage: 0 })}
+            onStartReading={(chapter) => handleStartReading(selectedManga, chapter)}
             isBookmarked={bookmarks.includes(selectedManga.id)}
             onToggleBookmark={(id) => toggleBookmark(id)}
+            isLoadingChapters={isLoadingChapters}
           />
         ) : (
           <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '1.5rem 1.5rem 5rem' }}>
-            
-            {/* Quick Resume Reading Widget */}
-            {readingHistory && (
-              <div
-                onClick={() => {
-                  const targetManga = MANGA_DATA.find((m) => m.id === readingHistory.mangaId);
-                  if (targetManga) {
-                    const targetChapter = targetManga.chapters.find((c) => c.id === readingHistory.chapterId) || targetManga.chapters[0];
-                    setReadingState({
-                      manga: targetManga,
-                      chapter: targetChapter,
-                      initialPage: readingHistory.pageIndex
-                    });
-                  }
-                }}
-                className="glass-card"
-                style={{
+            {/* Loading indicator for Mode 2 items */}
+            {isLoadingOnline && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+                padding: '1.5rem',
+                color: 'var(--accent-emerald)',
+                fontWeight: 600
+              }}>
+                <Loader2 size={20} className="animate-spin" />
+                <span>Conectando e extraindo catálogo online...</span>
+              </div>
+            )}
+
+            {/* MODO 2: Seção MangaFire Trending (Em Alta) */}
+            {isMode2 && activeTab === 'catalog' && searchQuery === '' && (
+              <div style={{ marginBottom: '2.5rem' }}>
+                <div style={{
                   display: 'flex',
+                  flexWrap: 'wrap',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '12px 20px',
-                  borderRadius: 'var(--radius-md)',
-                  marginBottom: '2rem',
-                  cursor: 'pointer',
-                  border: '1px solid rgba(0, 245, 160, 0.3)',
-                  backgroundColor: 'rgba(10, 15, 25, 0.85)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <img
-                    src={readingHistory.mangaCover}
-                    alt={readingHistory.mangaTitle}
-                    style={{ width: '38px', height: '54px', borderRadius: '4px', objectFit: 'cover' }}
-                  />
+                  gap: '1rem',
+                  marginBottom: '1.25rem',
+                  paddingBottom: '1rem',
+                  borderBottom: '1px solid rgba(0, 245, 160, 0.2)'
+                }}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Clock size={13} color="#00F5A0" />
-                      <span style={{ fontSize: '0.72rem', color: '#00F5A0', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Continuar Lendo de Onde Parou
-                      </span>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.08em',
+                      color: 'var(--accent-emerald)',
+                      textTransform: 'uppercase',
+                      marginBottom: '4px'
+                    }}>
+                      <Flame size={14} color="#00F5A0" fill="#00F5A0" />
+                      <span>TRENDING NOW • MANGAFIRE LIVE</span>
                     </div>
-                    <h4 style={{ color: '#fff', fontSize: '0.95rem', fontWeight: 700, margin: '2px 0' }}>
-                      {readingHistory.mangaTitle} — Cap. {readingHistory.chapterNumber} (Pág. {readingHistory.pageIndex + 1}/{readingHistory.totalPages})
-                    </h4>
+                    <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fff', margin: 0 }}>
+                      Tendências em Tempo Real
+                    </h2>
+                  </div>
+
+                  {/* Timeframe Segment Switcher */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    padding: '4px',
+                    borderRadius: 'var(--radius-full)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    gap: '2px'
+                  }}>
+                    {[
+                      { id: 1, label: 'Hoje' },
+                      { id: 7, label: 'Semana' },
+                      { id: 30, label: 'Mês' },
+                      { id: 365, label: 'Geral' }
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setTimeframe(t.id as any)}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: 'var(--radius-full)',
+                          border: 'none',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          backgroundColor: timeframe === t.id ? '#10B981' : 'transparent',
+                          color: timeframe === t.id ? '#05080E' : 'var(--text-secondary)',
+                          transition: 'all 0.2s ease',
+                          boxShadow: timeframe === t.id ? '0 2px 10px rgba(16, 185, 129, 0.4)' : 'none'
+                        }}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button
-                    className="glow-btn-primary"
-                    style={{ padding: '8px 16px', fontSize: '0.82rem' }}
-                  >
-                    <PlayCircle size={15} />
-                    Retomar Leitura
-                  </button>
-                </div>
+                {/* Trending Horizontal Cards Track */}
+                {filteredManga.length > 0 && (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                    gap: '1.25rem'
+                  }}>
+                    {filteredManga.slice(0, 6).map((manga) => (
+                      <MangaCard
+                        key={`trending-${manga.id}`}
+                        manga={manga}
+                        onSelect={(m) => handleSelectManga(m)}
+                        isBookmarked={bookmarks.includes(manga.id)}
+                        onToggleBookmark={(id, e) => toggleBookmark(id, e)}
+                        onSelectChapter={(m, chapter) => handleStartReading(m, chapter)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Hero Showcase */}
-            {activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
-              <section style={{
-                position: 'relative',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                marginBottom: '3rem',
-                backgroundColor: '#0c0f17',
-                border: '1px solid rgba(0, 245, 160, 0.25)',
-                boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 245, 160, 0.12)'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  backgroundImage: `url(${featuredManga.coverImage})`,
-                  backgroundPosition: 'center 25%',
-                  backgroundSize: 'cover',
-                  filter: 'blur(30px) brightness(0.22)',
-                  transform: 'scale(1.15)',
-                  pointerEvents: 'none'
-                }} />
-
-                <div style={{
-                  position: 'relative',
-                  zIndex: 2,
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(280px, 1fr) 280px',
-                  gap: '2.5rem',
-                  padding: '3rem',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                      <span className="badge-tag accent">
-                        <Flame size={13} color="#00F5A0" /> DESTAQUE DA SEMANA
-                      </span>
-                      <span className="badge-tag public-domain">
-                        <ShieldCheck size={13} /> 100% Domínio Público
-                      </span>
-                    </div>
-
-                    <h1 style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: '3rem',
-                      fontWeight: 900,
-                      lineHeight: 1.1,
-                      color: '#fff',
-                      marginBottom: '10px',
-                      letterSpacing: '-0.02em'
-                    }}>
-                      {featuredManga.title}
-                    </h1>
-
-                    <p style={{
-                      fontSize: '1rem',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.6,
-                      maxWidth: '680px',
-                      marginBottom: '1.8rem'
-                    }}>
-                      {featuredManga.synopsis}
-                    </p>
-
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => setReadingState({ manga: featuredManga, chapter: featuredManga.chapters[0], initialPage: 0 })}
-                        className="glow-btn-primary"
-                        style={{ padding: '14px 28px', fontSize: '1rem' }}
-                      >
-                        <BookOpen size={20} />
-                        Ler Agora (Capítulo 1)
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedManga(featuredManga)}
-                        className="glow-btn-secondary"
-                        style={{ padding: '14px 22px' }}
-                      >
-                        Ver Detalhes da Obra
-                        <ArrowRight size={16} />
-                      </button>
-
-                      <button
-                        onClick={() => setIsAchievementsOpen(true)}
-                        className="glow-btn-secondary"
-                        style={{ padding: '14px 20px' }}
-                      >
-                        <Award size={18} color="#00F5A0" />
-                        Conquistas
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Hero Floating 3D Cover */}
-                  <div
-                    onClick={() => setSelectedManga(featuredManga)}
-                    style={{
-                      cursor: 'pointer',
-                      borderRadius: 'var(--radius-md)',
-                      overflow: 'hidden',
-                      boxShadow: '0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(0, 245, 160, 0.3)',
-                      border: '2px solid rgba(0, 245, 160, 0.4)',
-                      transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                      maxHeight: '380px'
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-6px) scale(1.03)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0) scale(1)')}
-                  >
-                    <img
-                      src={featuredManga.coverImage}
-                      alt={featuredManga.title}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  </div>
-                </div>
-              </section>
+            {/* MODO 1: Kingofshojo Structure (Hero, Ribbon, Popular Today) */}
+            {!isMode2 && activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
+              <HeroSlider
+                featuredMangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
+                onStartReading={(m) => {
+                  if (m.chapters.length > 0) {
+                    handleStartReading(m, m.chapters[0]);
+                  } else {
+                    handleSelectManga(m);
+                  }
+                }}
+              />
             )}
 
-            {/* Filter Bar */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              marginBottom: '2rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-              paddingBottom: '1.2rem'
-            }}>
-              <div>
-                <h2 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1.6rem',
-                  fontWeight: 800,
-                  color: '#fff',
+            {!isMode2 && activeTab === 'catalog' && searchQuery === '' && (
+              <GenreRibbon
+                genres={allGenres.filter(g => g !== 'Todos')}
+                selectedGenre={selectedGenre}
+                onSelectGenre={(g) => setSelectedGenre(selectedGenre === g ? 'Todos' : g)}
+                onResetGenre={() => { setSelectedGenre('Todos'); setSearchQuery(''); }}
+              />
+            )}
+
+            {!isMode2 && activeTab === 'catalog' && searchQuery === '' && selectedGenre === 'Todos' && (
+              <PopularToday
+                mangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
+              />
+            )}
+
+            {/* Main 2-Column Portal Layout */}
+            <div className="portal-layout">
+              {/* Left Column: Latest Updates & Catalog Releases (.postbody) */}
+              <div className="postbody">
+                <div className="releases-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.08em',
+                      color: 'var(--accent-emerald)',
+                      textTransform: 'uppercase',
+                      marginBottom: '2px'
+                    }}>
+                      {isMode2 ? 'FRESH CHAPTERS • MANGAFIRE' : 'OBRAS RESTAURADAS'}
+                    </div>
+                    <h2 style={{ margin: 0 }}>
+                      <span>{activeTab === 'bookmarks' ? 'Meus Favoritos' : isMode2 ? 'Todos os Lançamentos' : 'Últimos Lançamentos'}</span>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--accent-emerald)',
+                        backgroundColor: 'rgba(0, 245, 160, 0.12)',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--radius-full)',
+                        fontWeight: 700,
+                        marginLeft: '8px'
+                      }}>
+                        {filteredManga.length} {filteredManga.length === 1 ? 'série' : 'séries'}
+                      </span>
+                    </h2>
+                  </div>
+
+                  {/* Mode 2 Controls: Type Filter & Dual View Mode */}
+                  {isMode2 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      {/* Type Filter Pills */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        padding: '3px',
+                        borderRadius: 'var(--radius-full)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)'
+                      }}>
+                        {[
+                          { id: 'all', label: 'Todos' },
+                          { id: 'manga', label: 'Mangá' },
+                          { id: 'manhwa', label: 'Manhwa' },
+                          { id: 'manhua', label: 'Manhua' }
+                        ].map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => setMangaTypeFilter(t.id as any)}
+                            style={{
+                              padding: '4px 12px',
+                              borderRadius: 'var(--radius-full)',
+                              border: 'none',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              backgroundColor: mangaTypeFilter === t.id ? '#10B981' : 'transparent',
+                              color: mangaTypeFilter === t.id ? '#05080E' : 'var(--text-secondary)',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* View Mode Toggle: Grid vs Rows */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        padding: '3px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255, 255, 255, 0.08)'
+                      }}>
+                        <button
+                          onClick={() => setViewMode('grid')}
+                          title="Visualização em Grade"
+                          style={{
+                            padding: '6px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: viewMode === 'grid' ? 'rgba(0, 245, 160, 0.25)' : 'transparent',
+                            color: viewMode === 'grid' ? '#00F5A0' : 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <LayoutGrid size={16} />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('rows')}
+                          title="Visualização em Linhas (MangaFire Row Cards)"
+                          style={{
+                            padding: '6px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: viewMode === 'rows' ? 'rgba(0, 245, 160, 0.25)' : 'transparent',
+                            color: viewMode === 'rows' ? '#00F5A0' : 'var(--text-muted)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <List size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    selectedGenre !== 'Todos' && (
+                      <span
+                        onClick={() => setSelectedGenre('Todos')}
+                        className="vl-link"
+                      >
+                        Limpar filtro: {selectedGenre} ✕
+                      </span>
+                    )
+                  )}
+                </div>
+
+                {/* Manga Cards: Grid Mode or Row Mode */}
+                {filteredManga.length > 0 ? (
+                  isMode2 && viewMode === 'rows' ? (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px',
+                      marginBottom: '2rem'
+                    }}>
+                      {filteredManga.map((manga) => (
+                        <MangaCard
+                          key={manga.id}
+                          manga={manga}
+                          isRowView={true}
+                          onSelect={(m) => handleSelectManga(m)}
+                          isBookmarked={bookmarks.includes(manga.id)}
+                          onToggleBookmark={(id, e) => toggleBookmark(id, e)}
+                          onSelectChapter={(m, chapter) => handleStartReading(m, chapter)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                      gap: '1.5rem',
+                      marginBottom: '2rem'
+                    }}>
+                      {filteredManga.map((manga) => (
+                        <MangaCard
+                          key={manga.id}
+                          manga={manga}
+                          isRowView={false}
+                          onSelect={(m) => handleSelectManga(m)}
+                          isBookmarked={bookmarks.includes(manga.id)}
+                          onToggleBookmark={(id, e) => toggleBookmark(id, e)}
+                          onSelectChapter={(m, chapter) => handleStartReading(m, chapter)}
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '4rem 1.5rem',
+                    border: '1px dashed rgba(255, 255, 255, 0.12)',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.01)'
+                  }}>
+                    <Bookmark size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
+                    <h3 style={{ color: '#fff', marginBottom: '6px' }}>Nenhum mangá encontrado</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                      {activeTab === 'bookmarks'
+                        ? 'Você ainda não adicionou nenhum mangá aos favoritos.'
+                        : 'Tente buscar por outro termo ou selecione outro gênero.'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Portfolio Info Pill */}
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px'
+                  gap: '10px',
+                  padding: '12px 18px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '10px',
+                  fontSize: '0.8rem',
+                  color: 'var(--text-secondary)'
                 }}>
-                  {activeTab === 'bookmarks' ? 'Meus Mangás Salvos' : 'Catálogo de Mangás'}
-                  <span style={{
-                    fontSize: '0.85rem',
-                    color: 'var(--accent-emerald)',
-                    backgroundColor: 'rgba(0, 245, 160, 0.1)',
-                    padding: '2px 10px',
-                    borderRadius: 'var(--radius-full)',
-                    fontWeight: 600
-                  }}>
-                    {filteredManga.length} {filteredManga.length === 1 ? 'obra' : 'obras'}
+                  {isMode2 ? <Zap size={16} color="#00F5A0" /> : <Sparkles size={16} color="#00F5A0" />}
+                  <span>
+                    {isMode2
+                      ? 'Conexão viva com a rede de mangás online ativa. Requisições e leitura acontecem em tempo real.'
+                      : 'Todas as páginas são scans reais restauradas para proporcionar uma experiência fiel e autêntica de leitura contínua.'}
                   </span>
-                </h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {activeTab === 'bookmarks'
-                    ? 'Obras que você favoritou para ler ou acompanhar.'
-                    : 'Grandes clássicos da literatura e pioneiros do mangá sob domínio público mundial.'}
-                </p>
+                </div>
               </div>
 
-              {/* Genre Pills */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {allGenres.map((genre) => (
-                  <button
-                    key={genre}
-                    onClick={() => setSelectedGenre(genre)}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: 'var(--radius-full)',
-                      border: selectedGenre === genre
-                        ? '1px solid #00F5A0'
-                        : '1px solid rgba(255, 255, 255, 0.08)',
-                      backgroundColor: selectedGenre === genre
-                        ? 'rgba(0, 245, 160, 0.15)'
-                        : 'rgba(255, 255, 255, 0.03)',
-                      color: selectedGenre === genre ? '#00F5A0' : 'var(--text-secondary)',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {genre}
-                  </button>
-                ))}
-              </div>
+              {/* Right Column: Sidebar with Popular Rankings & History */}
+              <Sidebar
+                mangaList={activeDataset}
+                onSelectManga={(m) => handleSelectManga(m)}
+                readingHistory={readingHistory}
+                onResumeReading={(progress) => {
+                  const targetManga = activeDataset.find((m) => m.id === progress.mangaId) || MANGA_DATA.find((m) => m.id === progress.mangaId);
+                  if (targetManga) {
+                    const targetChapter = targetManga.chapters.find((c) => c.id === progress.chapterId) || targetManga.chapters[0];
+                    if (targetChapter) {
+                      handleStartReading(targetManga, targetChapter);
+                    } else {
+                      handleSelectManga(targetManga);
+                    }
+                  }
+                }}
+              />
             </div>
-
-            {/* Grid of Manga Cards */}
-            {filteredManga.length > 0 ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                gap: '1.8rem'
-              }}>
-                {filteredManga.map((manga) => (
-                  <MangaCard
-                    key={manga.id}
-                    manga={manga}
-                    onSelect={(m) => setSelectedManga(m)}
-                    isBookmarked={bookmarks.includes(manga.id)}
-                    onToggleBookmark={(id, e) => toggleBookmark(id, e)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div style={{
-                textAlign: 'center',
-                padding: '4rem 1.5rem',
-                border: '1px dashed rgba(255, 255, 255, 0.12)',
-                borderRadius: 'var(--radius-lg)',
-                backgroundColor: 'rgba(255, 255, 255, 0.01)'
-              }}>
-                <Bookmark size={36} color="var(--text-muted)" style={{ margin: '0 auto 12px' }} />
-                <h3 style={{ color: '#fff', marginBottom: '6px' }}>Nenhum mangá encontrado</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                  {activeTab === 'bookmarks'
-                    ? 'Você ainda não adicionou nenhum mangá aos favoritos.'
-                    : 'Tente buscar por outro termo ou selecione outro gênero.'}
-                </p>
-              </div>
-            )}
           </div>
         )}
       </main>
+
 
       {/* Footer */}
       <footer style={{
@@ -486,7 +698,7 @@ export function App() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img
-              src="/brand/logo-polygon.jpg"
+              src="/brand/logo.jpg"
               alt="Mangator Alligator Mascot"
               style={{
                 width: '38px',

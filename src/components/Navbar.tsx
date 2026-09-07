@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Compass, Bookmark, Search, Info, ShieldCheck } from 'lucide-react';
+import React from 'react';
+import { Compass, Bookmark, Search, Info, ShieldCheck, Zap } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'catalog' | 'bookmarks' | 'about';
@@ -8,6 +8,8 @@ interface NavbarProps {
   onSearchChange: (q: string) => void;
   onOpenAboutModal: () => void;
   bookmarksCount: number;
+  isMode2: boolean;
+  onToggleMode2: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,18 +19,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   onOpenAboutModal,
   bookmarksCount,
+  isMode2,
+  onToggleMode2,
 }) => {
-  const logos = [
-    { id: 'polygon', src: '/brand/logo-polygon.jpg', label: 'Polygon Tech' },
-    { id: 'book', src: '/brand/logo-book.jpg', label: 'Book Maw' },
-    { id: 'comic', src: '/brand/logo-comic.jpg', label: 'Manga Panels' },
-    { id: 'chibi', src: '/brand/logo-chibi.jpg', label: 'Chibi Mascot' }
-  ];
+  const logoSrc = '/brand/logo.jpg';
 
-  const [currentLogoIdx, setCurrentLogoIdx] = useState(0);
-
-  const toggleNextLogo = () => {
-    setCurrentLogoIdx((prev) => (prev + 1) % logos.length);
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleMode2();
   };
 
   return (
@@ -56,31 +54,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
              onClick={() => onSelectTab('catalog')}>
           <div
-            title="Clique para alternar o estilo do ícone Mangator!"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNextLogo();
-            }}
+            title="Clique para alternar entre Modo 1 (Acervo Clássico) e Modo 2 (Mangás Online)!"
+            onClick={handleIconClick}
             style={{
               position: 'relative',
-              width: '46px',
-              height: '46px',
-              borderRadius: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
               overflow: 'hidden',
               border: '2px solid rgba(0, 245, 160, 0.4)',
               boxShadow: '0 0 15px rgba(0, 245, 160, 0.25)',
-              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: '#05070A',
               cursor: 'pointer'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.08) rotate(3deg)')}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1) rotate(4deg)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) rotate(0deg)')}
           >
             <img
-              src={logos[currentLogoIdx].src}
+              src={logoSrc}
               alt="Mangator Alligator Mascot Icon"
               style={{
                 width: '100%',
@@ -90,13 +85,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
             <div style={{
               position: 'absolute',
-              bottom: 1,
-              right: 1,
-              width: '8px',
-              height: '8px',
+              bottom: 2,
+              right: 2,
+              width: '10px',
+              height: '10px',
               borderRadius: '50%',
               backgroundColor: '#00F5A0',
-              border: '1px solid #000'
+              border: '2px solid #000',
+              boxShadow: '0 0 6px #00F5A0'
             }} />
           </div>
 
@@ -107,25 +103,46 @@ export const Navbar: React.FC<NavbarProps> = ({
                 fontWeight: 900,
                 fontSize: '1.45rem',
                 letterSpacing: '-0.02em',
-                background: 'linear-gradient(135deg, #FFFFFF 30%, #00F5A0 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                lineHeight: 1
+                color: '#FFFFFF',
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center'
               }}>
-                MANGATOR
+                MANGA
+                <span style={{
+                  color: '#00F5A0',
+                  textShadow: '0 0 16px rgba(0, 245, 160, 0.5)'
+                }}>
+                  TOR
+                </span>
               </span>
-              <span style={{
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                backgroundColor: 'rgba(0, 245, 160, 0.15)',
-                color: '#00F5A0',
-                border: '1px solid rgba(0, 245, 160, 0.3)',
-                padding: '2px 7px',
-                borderRadius: '6px'
-              }}>
-                PORTFÓLIO
+              <span
+                onClick={handleIconClick}
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  backgroundColor: 'rgba(0, 245, 160, 0.15)',
+                  color: '#00F5A0',
+                  border: '1px solid rgba(0, 245, 160, 0.3)',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {isMode2 ? (
+                  <>
+                    <Zap size={11} fill="#00F5A0" />
+                    MODO 2 (ONLINE)
+                  </>
+                ) : (
+                  'MODO 1 (ACERVO)'
+                )}
               </span>
             </div>
             <div style={{
@@ -136,8 +153,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               gap: '4px',
               marginTop: '2px'
             }}>
-              <ShieldCheck size={11} color="#10B981" />
-              <span>Domínio Público & Experiência HD</span>
+              {isMode2 ? (
+                <>
+                  <Zap size={11} color="#00F5A0" />
+                  <span>Rede Online Ativa (Clique no ícone p/ Modo 1)</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={11} color="#10B981" />
+                  <span>Domínio Público Autêntico (Clique no ícone p/ Modo 2)</span>
+                </>
+              )}
             </div>
           </div>
         </div>

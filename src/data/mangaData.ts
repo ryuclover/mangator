@@ -50,6 +50,14 @@ export interface Manga {
   featured?: boolean;
   chapters: Chapter[];
   reviews: Review[];
+  // Campos estruturais do MangaFire
+  hid?: string;
+  slug?: string;
+  mangaType?: 'manga' | 'manhwa' | 'manhua' | 'other';
+  rank?: number;
+  latestChapterNum?: number;
+  chapterUpdatedAt?: string;
+  url?: string;
 }
 
 export interface ReadingProgress {
@@ -85,7 +93,7 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'history_buff',
     title: 'Arqueólogo do Mangá',
-    description: 'Leu uma obra clássica histórica do catálogo de domínio público.',
+    description: 'Leu os pergaminhos históricos de Chōjū-jinbutsu-giga do século XII.',
     icon: '📜',
     unlocked: true,
     unlockedAt: 'Hoje'
@@ -100,7 +108,7 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'collector',
     title: 'Devorador de Capítulos',
-    description: 'Completou a leitura de 3 ou mais capítulos.',
+    description: 'Completou a leitura de 3 ou mais obras históricas.',
     icon: '⚡',
     unlocked: false
   },
@@ -113,49 +121,46 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   }
 ];
 
-import { HISTORICAL_CATALOG } from './historicalCatalog';
-
-const INITIAL_SHOWCASE: Manga[] = [
+export const MANGA_DATA: Manga[] = [
   {
-    id: 'kaguya-hime',
-    title: 'O Conto da Princesa Kaguya',
-    originalTitle: '竹取物語 (Taketori Monogatari)',
-    author: 'Folclore Clássico Japonês (Séc. X)',
-    artist: 'Adaptação Mangator Studio',
-    year: 900,
-    coverImage: '/manga/cover-kaguya.jpg',
-    bannerImage: '/manga/cover-kaguya.jpg',
-    synopsis: 'A mais antiga narrativa em prosa do Japão e precursora da ficção científica e fantasia. Um cortador de bambu humilde encontra uma pequenina criança que resplandece dentro de um caule de bambu brilhante. Conforme cresce com uma beleza celestial incomparável, Kaguya atrai príncipes e o próprio Imperador com tarefas impossíveis, até que a verdade sobre sua origem na Lua se revela.',
-    genres: ['Folclore', 'Fantasia Mística', 'Drama', 'Clássico Japonês'],
+    id: 'choju-giga',
+    title: 'Chōjū-jinbutsu-giga (Pergaminhos dos Animais)',
+    originalTitle: '鳥獣人物戯画 (Chōjū-giga)',
+    author: 'Monge Toba Sōjō (Atribuído / Séc. XII)',
+    artist: 'Acervo Nacional de Kyoto / Templo Kōzan-ji',
+    year: 1150,
+    coverImage: '/manga/choju_cover.jpg',
+    bannerImage: '/manga/choju_cover.jpg',
+    synopsis: 'O ancestral histórico primordial de toda a linguagem visual de mangás do Japão. Animais antropomórficos (coelhos, sapos e macacos) disputam lutas ferozes de sumô, celebram festivais budistas, roubam banquetes e satirizam a aristocracia com linhas expressivas pintadas com tinta sumi-ê em rolos contínuos de pergaminho preservados desde o século XII.',
+    genres: ['Origem do Mangá', 'Patrimônio Nacional', 'Folclore', 'Comédia Antiga'],
     status: 'Completo',
-    license: 'Domínio Público Internacional (Folclore Pré-Moderno)',
-    rating: 4.98,
-    views: '142.5K',
+    license: 'Domínio Público Mundial (Pergaminhos Históricos Séc. XII)',
+    rating: 5.0,
+    views: '345.8K',
     accentColor: '#10B981',
     featured: true,
     chapters: [
       {
-        id: 'kaguya-ch-1',
+        id: 'choju-ch-1',
         number: 1,
-        title: 'Capítulo 1: A Donzela que Nasceu do Bambu',
-        releaseDate: 'Domínio Público',
-        pagesCount: 6,
+        title: 'Pergaminho 1: O Sumô dos Sapos e Coelhos & As Festas dos Bichos',
+        releaseDate: 'Preservação Nacional de Quioto',
+        pagesCount: 5,
         pages: [
-          '/manga/kaguya-p1.jpg',
-          '/manga/kaguya-p2.jpg',
-          '/manga/kaguya-p3.jpg',
-          '/manga/kaguya-p4.jpg',
-          '/manga/kaguya-p5.jpg',
-          '/manga/kaguya-p6.jpg'
+          '/manga/choju_p1.jpg',
+          '/manga/choju_p2.jpg',
+          '/manga/choju_p3.jpg',
+          '/manga/choju_p4.jpg',
+          '/manga/choju_p5.jpg'
         ],
         comments: [
           {
-            id: 'c1',
-            userName: 'Renan Silva',
-            userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
+            id: 'cc1',
+            userName: 'Dra. Kenji Tanaka',
+            userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
             date: 'Há 2 dias',
-            text: 'A introdução é mágica! É incrível pensar que essa história foi escrita no século X e já continha elementos que hoje definem o gênero de ficção científica e fantasia.',
-            likes: 24,
+            text: 'A cena do sapo derrotando o coelho no sumô com o riso dos outros animais é a gênese da narrativa sequencial bem-humorada japonesa!',
+            likes: 48,
             isSpoiler: false
           }
         ]
@@ -163,124 +168,130 @@ const INITIAL_SHOWCASE: Manga[] = [
     ],
     reviews: [
       {
-        id: 'r1',
-        userName: 'Gabriel Arantes',
-        userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        id: 'rc1',
+        userName: 'Historiador Sato',
+        userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
         rating: 5,
         storyRating: 5.0,
-        artRating: 4.9,
+        artRating: 5.0,
         charactersRating: 5.0,
-        date: '02 de Março, 2026',
-        content: 'Uma obra-prima atemporal. A forma como Taketori Monogatari mistura poesia com o mistério extraterrestre de Kaguya é simplesmente fascinante.',
-        likes: 42
+        date: '05 de Março, 2026',
+        content: 'Preservação impecável em alta definição. Poder ler o primeiro mangá da história da humanidade em tela cheia e modo contínuo é uma experiência indescritível.',
+        likes: 62
       }
     ]
   },
   {
-    id: 'cthulhu-dweller',
-    title: 'Cthulhu: O Habitante das Profundezas',
-    originalTitle: 'The Call of Cthulhu',
-    author: 'H.P. Lovecraft (1928)',
-    artist: 'Estilo Junji Ito / Horror Mangator',
-    year: 1928,
-    coverImage: '/manga/cover-lovecraft.jpg',
-    bannerImage: '/manga/cover-lovecraft.jpg',
-    synopsis: 'Adaptação visceral e aterrorizante do clássico da literatura de horror cósmico. Quando uma investigação em anotações herdadas de um falecido arqueólogo revela cultos ancestrais, loucura coletiva de artistas e a emersão da cidade ciclópica de R’lyeh, a humanidade depara-se com horrores cósmicos além de sua compreensão.',
-    genres: ['Horror Cósmico', 'Mistério', 'Psicológico', 'Sobrenatural'],
+    id: 'hokusai-manga',
+    title: 'Hokusai Manga (Estudos Visuais e Esboços)',
+    originalTitle: '北斎漫画 (Hokusai Manga)',
+    author: 'Katsushika Hokusai (1814)',
+    artist: 'Katsushika Hokusai',
+    year: 1814,
+    coverImage: '/manga/hokusai_cover.jpg',
+    bannerImage: '/manga/hokusai_cover.jpg',
+    synopsis: 'A obra seminal de onde surgiu o termo oficial "MANGÁ" (desenhos espontâneos/fantasiosos) pelas mãos do maior mestre do ukiyo-e do mundo, Katsushika Hokusai. Reúne esboços revolucionários de lutadores de sumô em pleno movimento, monstros lendários, mágicos de Edo e estudos anatômicos que influenciaram tanto os mangakás modernos quanto os impressionistas europeus.',
+    genres: ['Ukiyo-e', 'Origem do Termo Mangá', 'Artes Marciais', 'Histórico'],
     status: 'Completo',
-    license: 'Domínio Público (Obra Original Pré-1929)',
-    rating: 4.95,
-    views: '210.8K',
+    license: 'Domínio Público Mundial (Publicado em 1814)',
+    rating: 4.99,
+    views: '412.0K',
     accentColor: '#00F5A0',
     featured: true,
     chapters: [
       {
-        id: 'cthulhu-ch-1',
+        id: 'hokusai-ch-1',
         number: 1,
-        title: 'Capítulo 1: O Horror na Argila e a Loucura Coletiva',
-        releaseDate: 'Domínio Público',
+        title: 'Livro 1: Os Lutadores de Sumô e a Dinâmica do Movimento',
+        releaseDate: '1814 (Edição de Edo)',
         pagesCount: 3,
         pages: [
-          '/manga/cthulhu-p1.jpg',
-          '/manga/cthulhu-p2.jpg',
-          '/manga/cthulhu-p3.jpg'
+          '/manga/hokusai_p1.jpg',
+          '/manga/hokusai_p2.jpg',
+          '/manga/hokusai_p3.jpg'
         ],
-        comments: []
+        comments: [
+          {
+            id: 'ch1',
+            userName: 'Lucas Prado',
+            userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
+            date: 'Ontem',
+            text: 'A precisão com que Hokusai desenha as quedas e os músculos dos lutadores de sumô sem perder a leveza do traço é pura genialidade.',
+            likes: 31,
+            isSpoiler: false
+          }
+        ]
       }
     ],
-    reviews: []
-  },
-  {
-    id: 'dracula-nocturne',
-    title: 'Drácula: O Noturno Eterno',
-    originalTitle: 'Dracula (Bram Stoker)',
-    author: 'Bram Stoker (1897)',
-    artist: 'Gothic Aesthetic Mangator',
-    year: 1897,
-    coverImage: '/manga/cover-dracula.jpg',
-    bannerImage: '/manga/cover-dracula.jpg',
-    synopsis: 'Nas montanhas misteriosas da Transilvânia, o jovem procurador Jonathan Harker viaja para formalizar a aquisição de imóveis em Londres para um nobre misterioso. O que ele encontra é uma fortaleza espectral e o Conde Drácula, o ápice da aristocracia das trevas cujo plano atravessará oceanos em busca de sangue fresco.',
-    genres: ['Gótico', 'Vampiro', 'Ação Sombria', 'Clássico Vitoriano'],
-    status: 'Completo',
-    license: 'Domínio Público Internacional',
-    rating: 4.92,
-    views: '175.4K',
-    accentColor: '#FF3366',
-    featured: false,
-    chapters: [
+    reviews: [
       {
-        id: 'dracula-ch-1',
-        number: 1,
-        title: 'Capítulo 1: O Castelo na Névoa dos Cárpatos',
-        releaseDate: 'Domínio Público',
-        pagesCount: 3,
-        pages: [
-          '/manga/dracula-p1.jpg',
-          '/manga/dracula-p2.jpg',
-          '/manga/dracula-p3.jpg'
-        ],
-        comments: []
+        id: 'rh1',
+        userName: 'Marina Costa',
+        userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+        rating: 5,
+        storyRating: 4.9,
+        artRating: 5.0,
+        charactersRating: 4.8,
+        date: '02 de Março, 2026',
+        content: 'Hokusai Manga é a bíblia de todo desenhista. Os traços em xilogravura restaurados ficaram cristalinos no leitor.',
+        likes: 39
       }
-    ],
-    reviews: []
+    ]
   },
   {
-    id: 'tagosaku-tokyo',
+    id: 'tagosaku-tokyo-real',
     title: 'Tagosaku e Mokube no Tokyo Kenbutsu',
     originalTitle: '田吾作と杢兵衛の東京見物',
-    author: 'Rakuten Kitazawa (1902)',
-    artist: 'Rakuten Kitazawa (Pioneiro do Mangá Moderno)',
+    author: 'Kitazawa Rakuten (1902)',
+    artist: 'Kitazawa Rakuten (Pioneiro do Mangá Moderno)',
     year: 1902,
-    coverImage: '/manga/cover-tagosaku.jpg',
-    bannerImage: '/manga/cover-tagosaku.jpg',
-    synopsis: 'Considerado historicamente como o primeiro mangá moderno com balões de fala, personagens recorrentes e estrutura sequencial japonesa de tiras. Acompanhe a divertida e ingênua jornada de dois camponeses do interior que chegam à recém-modernizada Tóquio da era Meiji, surpreendendo-se com trens a vapor, cafés e bondes elétricos.',
-    genres: ['Histórico', 'Comédia Clássica', 'Pioneiro do Mangá', 'Slice of Life'],
+    coverImage: '/manga/tagosaku_real_cover.jpg',
+    bannerImage: '/manga/tagosaku_real_cover.jpg',
+    synopsis: 'Scans originais e autênticos da publicação de 1902 considerada pelos historiadores como o primeiro mangá moderno com personagens fixos, balões de fala e narrativa sequencial cômica. Dois caipiras ingênuos do interior viajam até a recém-modernizada Tóquio da era Meiji e se espantam com os bondes, cafés e ferrovias.',
+    genres: ['Primeiro Mangá Moderno', 'Comédia Clássica', 'Era Meiji', 'Histórico'],
     status: 'Completo',
     license: 'Domínio Público Mundial (Publicado em 1902)',
-    rating: 4.88,
-    views: '98.3K',
+    rating: 4.95,
+    views: '198.4K',
     accentColor: '#10B981',
     featured: false,
     chapters: [
       {
-        id: 'tagosaku-ch-1',
+        id: 'tagosaku-real-ch-1',
         number: 1,
-        title: 'Capítulo 1: O Primeiro Trem e as Ruas de Ginza',
-        releaseDate: '1902 (Restauração Histórica)',
-        pagesCount: 3,
+        title: 'Capítulo Original: A Chegada à Capital e a Surpresa em Ginza',
+        releaseDate: '1902 (Jiji Shimpō)',
+        pagesCount: 2,
         pages: [
-          '/manga/tagosaku-p1.jpg',
-          '/manga/tagosaku-p2.jpg',
-          '/manga/tagosaku-p3.jpg'
+          '/manga/tagosaku_real_p1.jpg',
+          '/manga/tagosaku_real_p2.jpg'
         ],
-        comments: []
+        comments: [
+          {
+            id: 'ct1',
+            userName: 'Prof. Nakamura',
+            userAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
+            date: 'Há 3 dias',
+            text: 'Ver o primeiro mangá moderno com as tiras reais desenhadas por Rakuten Kitazawa em 1902 acessível assim é um marco para qualquer portfólio.',
+            likes: 42,
+            isSpoiler: false
+          }
+        ]
       }
     ],
-    reviews: []
+    reviews: [
+      {
+        id: 'rt1',
+        userName: 'Eduardo Neves',
+        userAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80',
+        rating: 5,
+        storyRating: 4.8,
+        artRating: 4.9,
+        charactersRating: 5.0,
+        date: '28 de Fevereiro, 2026',
+        content: 'O humor visual de 1902 continua divertidíssimo. Excelente restauração.',
+        likes: 27
+      }
+    ]
   }
-];
-
-export const MANGA_DATA: Manga[] = [
-  ...INITIAL_SHOWCASE,
-  ...HISTORICAL_CATALOG
 ];
