@@ -1,119 +1,152 @@
-# 🐊 MANGATOR — Modern Web Manga Reader & Platform
+# 🐊 MANGATOR — Plataforma Moderna de Leitura de Mangás
 
 <div align="center">
 
-![Mangator Banner](docs/screenshots/01_home_catalog.png)
+<img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/01_home_catalog.png" alt="MANGATOR Banner" width="100%" />
 
-[![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://mangator.vercel.app)
+<br/><br/>
+
+[![Status do Deploy](https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge&logo=vercel)](https://mangator.vercel.app)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-00F5A0?style=for-the-badge)](LICENSE)
+[![Licença: MIT](https://img.shields.io/badge/Licença-MIT-00F5A0?style=for-the-badge)](LICENSE)
 
-**Plataforma de alta performance para leitura e catalogação de mangás com design obsidian neon, leitor em cascata contínua, histórico persistente e integração de acervo online em tempo real.**
+**Aplicação web de alta performance desenvolvida para leitura imersiva de mangás, webtoons e quadrinhos, unindo um acervo histórico curado em domínio público a um motor dinâmico com requisições e capítulos atualizados em tempo real.**
 
-[✨ Acessar Demonstração Online](https://mangator.vercel.app) • [📖 Funcionalidades](#-funcionalidades-principais) • [🏗️ Arquitetura](#%EF%B8%8F-arquitetura-e-tecnologias) • [🚀 Como Executar](#-instalação-e-execução-local)
-
-</div>
-
----
-
-## 🌟 Destaques do Projeto
-
-- ⚡ **Leitor em Cascata (Webtoon / Vertical Scroll)**: Leitura infinita fluida de páginas em alta resolução, com alternância para modo página única, atalhos de teclado (`←` / `→` / `Espaço`), controles de zoom e ajuste de brilho noturno.
-- 🐊 **Dois Modos de Operação Integrados (Persistentes via LocalStorage)**:
-  - **Modo 1 (Acervo Histórico & Domínio Público)**: Clássicos e tesouros da literatura ilustrada e quadrinhos originais (Hokusai Manga, Tagosaku to Mokube, Dracula, Carmilla, Lovecraft) com scans reais e downloads offline em `.CBZ` / `.ZIP`.
-  - **Modo 2 (Rede Online em Tempo Real)**: Integração com proxy serverless de alta disponibilidade que realiza scrapping e sincronização dinâmica de milhares de mangás populares, capítulos atualizados e servidores CDN de imagens.
-- 🎨 **Design System Obsidian & Neon Emerald**: Visual moderno em tons escuros profundos (`#0A0D14`), detalhes com blur de vidro (`backdrop-filter`), acentos em verde esmeralda neon (`#00F5A0`) e micro-interações fluidas.
-- 📑 **Sistema de Favoritos & Marcadores**: Salve títulos favoritos e preserve seu progresso exato de leitura entre sessões.
-- 🔍 **Busca Dinâmica & Filtros por Gênero**: Pesquisa instantânea em tempo real com filtros por demografia e tipo (Mangá, Manhwa, Manhua, Shounen, Seinen, etc.).
-- 🛡️ **Totalmente Responsivo**: Experiência consistente adaptada para celulares, tablets e monitores ultrawide.
-
----
-
-## 📸 Demonstração Visual
-
-<div align="center">
-
-### 1. Catálogo & Exploração
-*Visualização rica em cards e lista, filtros por formato e ranking em tempo real*
-![Catálogo Mangator](docs/screenshots/01_home_catalog.png)
-
----
-
-### 2. Visão Detalhada da Obra
-*Sinopse completa, badges de gêneros, métricas e lista de capítulos com sincronização dinâmica*
-![Detalhes do Mangá](docs/screenshots/02_manga_details.png)
-
----
-
-### 3. Leitor Imersivo em Cascata
-*Modo contínuo sem travamentos, barra flutuante de progresso, seletor de capítulos e ajuste de visualização*
-![Leitor em Cascata](docs/screenshots/03_reader_cascade.png)
-
----
-
-### 4. Meus Favoritos & Coleção
-*Painel de mangás salvos localmente com estatísticas e acesso rápido*
-![Favoritos](docs/screenshots/04_bookmarks.png)
-
----
-
-### 5. Sobre o Projeto & Transparência
-*Modal com informações técnicas, diretrizes de preservação e créditos*
-![Sobre o Projeto](docs/screenshots/05_about_modal.png)
+[🚀 Acessar o Site em Produção (mangator.vercel.app)](https://mangator.vercel.app)
 
 </div>
 
 ---
 
-## 🏗️ Arquitetura e Tecnologias
+## 🎯 Sobre o Projeto
+
+O **MANGATOR** foi construído para resolver os principais gargalos das plataformas tradicionais de leitura online: excesso de poluição visual, lentidão de carregamento, anúncios intrusivos e interfaces ultrapassadas.
+
+Com uma identidade visual exclusiva inspirada na estética **Obsidian & Neon Emerald** (`#00F5A0`), a plataforma oferece uma experiência premium tanto para quem deseja apreciar clássicos restaurados quanto para quem acompanha lançamentos semanais de obras populares.
+
+---
+
+## 📸 Demonstração Visual da Aplicação
+
+### 1. Catálogo e Página Inicial
+Visualização dinâmica em grade ou linhas, com banners em destaque, ranking dos mais lidos por período e filtros por formato (Mangá, Manhwa, Manhua).
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/01_home_catalog.png" alt="Catálogo MANGATOR" width="100%" />
+</p>
+
+---
+
+### 2. Visão Detalhada da Obra e Capítulos
+Página completa com metadados detalhados (sinopse, status, autores, tags), sincronização de volumes e lista interativa de capítulos.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/02_manga_details.png" alt="Detalhes da Obra" width="100%" />
+</p>
+
+---
+
+### 3. Leitor Imersivo em Cascata (Webtoon / Vertical Scroll)
+Leitura fluida sem quebras de página, com pré-carregamento contínuo inteligente, barra flutuante de progresso, navegação rápida entre capítulos e atalhos de teclado.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/03_reader_cascade.png" alt="Leitor em Cascata" width="100%" />
+</p>
+
+---
+
+### 4. Coleção Pessoal e Favoritos
+Gerenciamento de títulos marcados pelo leitor, com contadores atualizados e persistência automática no armazenamento local do navegador.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/04_bookmarks.png" alt="Meus Favoritos" width="100%" />
+</p>
+
+---
+
+### 5. Manifesto e Informações do Projeto
+Modal explicativo sobre a missão de preservação, transparência das fontes e detalhes da arquitetura.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ryuclover/mangator/main/docs/screenshots/05_about_modal.png" alt="Sobre o Projeto" width="100%" />
+</p>
+
+---
+
+## ⚡ Principais Funcionalidades
+
+- 📖 **Leitor de Alta Performance**:
+  - **Modo Cascata (Padrão)**: Rolagem vertical suave e infinita, perfeita para webtoons e leitura dinâmica em smartphones ou monitores convencionais.
+  - **Modo Página Única**: Visualização clássica focada em uma página por vez com transição lateral rápida (`←` e `→`).
+  - **Atalhos e Controles**: Barra de progresso em tempo real, seletor suspenso de capítulos e controle de iluminação/zoom.
+- 🐊 **Dois Modos de Operação Integrados (Persistência Automática)**:
+  - **Modo 1 (Acervo Clássico & Domínio Público)**: Obras históricas preservadas (Hokusai Manga, Tagosaku to Mokube, Dracula de Bram Stoker, Carmilla, H.P. Lovecraft) com scans reais e opção de download em formato `.CBZ` / `.ZIP`.
+  - **Modo 2 (Rede Online em Tempo Real)**: Conexão direta via proxy serverless para busca e leitura de milhares de mangás populares atualizados continuamente.
+  - **Memória Local**: A preferência de modo é salva no `localStorage`, mantendo sua escolha mesmo ao sair ou recarregar a página.
+- 🎨 **Interface Moderna e Responsiva**:
+  - Estética Dark Obsidian com acentos em Verde Esmeralda Neon (`#00F5A0`).
+  - Efeitos refinados de vidro translúcido (`backdrop-filter: blur`).
+  - Totalmente adaptada para dispositivos móveis, tablets e desktops.
+- 🔍 **Busca Dinâmica & Filtros**:
+  - Busca instantânea conforme você digita.
+  - Filtros por demografia e categoria (Mangá, Manhwa, Manhua, Shounen, Seinen, etc.).
+  - Classificação por popularidade diária, semanal e mensal.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Camada | Ferramentas |
+|---|---|
+| **Interface / Frontend** | [React 19](https://react.dev/), [TypeScript 5/6](https://www.typescriptlang.org/), [Vite 8](https://vitejs.dev/) |
+| **Estilização & Design** | Vanilla CSS moderno com Design Tokens, CSS Variables e Glassmorphism |
+| **Componentes e Ícones** | [Lucide React](https://lucide.dev/), [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti) |
+| **Processamento de Arquivos** | [JSZip](https://stuk.github.io/jszip/) para geração e empacotamento de arquivos `.CBZ` no navegador |
+| **Backend & Proxy** | [Vercel Serverless Functions](https://vercel.com/) (Node.js) para bypass de CORS, streaming e decodificação |
+| **Qualidade de Código** | [Oxlint](https://oxc.rs/) para análise estática ultra veloz |
+
+---
+
+## 📁 Estrutura de Pastas
 
 ```
 mangator/
-├── api/                       # Vercel Serverless Functions (CORS & Scraper Proxies)
-│   ├── chapter-pages.ts       # Decodificação de imagens de capítulos
-│   ├── chapters.ts            # Sincronização de volumes e capítulos
-│   ├── mangafire.ts           # Descoberta, busca e paginação de mangás
-│   └── proxy.ts               # Proxy de streaming e bypass de imagens
-├── docs/                      # Documentação e capturas de tela
-│   └── screenshots/
-├── public/                    # Favicon, mascote e ícones da aplicação
+├── api/                       # Funções Serverless (Vercel)
+│   ├── chapter-pages.ts       # Decodificador de imagens dos capítulos
+│   ├── chapters.ts            # Sincronização dinâmica de capítulos
+│   ├── mangafire.ts           # Motor de busca e catálogo online
+│   └── proxy.ts               # Proxy de streaming e bypass de CORS
+├── docs/                      # Ativos de documentação
+│   └── screenshots/           # Capturas de tela em alta resolução
+├── public/                    # Imagens estáticas, logotipos e favicon
 └── src/
-    ├── components/            # Componentes modulares reutilizáveis
-    │   ├── AboutModal.tsx     # Modal de informações e manifesto
-    │   ├── MangaCard.tsx      # Cards interativos (Grid & Row View)
-    │   ├── MangaDetail.tsx    # Visão detalhada de volumes e metadados
-    │   ├── MangaReader.tsx    # Leitor em cascata contínua & página única
-    │   ├── Navbar.tsx         # Cabeçalho responsivo e toggle de Modos
-    │   └── PopularToday.tsx   # Ranking lateral e obras em destaque
-    ├── data/                  # Estruturas de tipos e acervo histórico curado
+    ├── components/            # Componentes visuais do React
+    │   ├── AboutModal.tsx     # Modal informativo do projeto
+    │   ├── MangaCard.tsx      # Cards de apresentação (Modo Grade e Linha)
+    │   ├── MangaDetail.tsx    # Tela de metadados e lista de capítulos
+    │   ├── MangaReader.tsx    # Leitor interativo (Cascata e Página Única)
+    │   ├── Navbar.tsx         # Barra de navegação, busca e toggle de modos
+    │   └── PopularToday.tsx   # Painel lateral com os mais lidos
+    ├── data/                  # Catálogo de domínio público e tipos TypeScript
     │   └── mangaData.ts
-    ├── services/              # Camada de comunicação com a API e Scrapers
+    ├── services/              # Camada de requisições e integração de dados
     │   └── onlineMangaService.ts
-    ├── App.tsx                # Gerenciamento de estado global e roteamento
-    ├── index.css              # Tokens do Design System e variáveis CSS
-    └── main.tsx               # Ponto de entrada React 19
+    ├── App.tsx                # Estado global da aplicação e orquestração
+    ├── index.css              # Variáveis de cores, tipografia e reset
+    └── main.tsx               # Ponto de inicialização do React
 ```
-
-### Tecnologias Utilizadas
-
-- **Frontend**: [React 19](https://react.dev/), [TypeScript 6](https://www.typescriptlang.org/), [Vite 8](https://vitejs.dev/)
-- **Ícones & Efeitos**: [Lucide React](https://lucide.dev/), [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
-- **Compactação & Exportação**: [JSZip](https://stuk.github.io/jszip/) (Geração de pacotes `.CBZ`)
-- **Deploy & Serverless**: [Vercel](https://vercel.com/) com Vercel Edge Functions para streaming de dados
-- **Linter & Otimização**: [Oxlint](https://oxc.rs/)
 
 ---
 
-## 🚀 Instalação e Execução Local
+## 🚀 Como Executar Localmente
 
 ### Pré-requisitos
+- **Node.js** (versão 18 ou superior recomendada)
+- **npm**, **pnpm** ou **yarn**
 
-- **Node.js** (v18 ou superior recomendado)
-- Gerenciador de pacotes **npm**, **pnpm** ou **yarn**
-
-### Passo a Passo
+### Instalação
 
 1. **Clone o repositório:**
    ```bash
@@ -131,38 +164,30 @@ mangator/
    npm run dev
    ```
 
-4. **Acesse no navegador:**
+4. **Abra em seu navegador:**
    ```
    http://localhost:5173
    ```
 
-### Scripts Disponíveis
+### Scripts do Projeto
 
-| Comando | Descrição |
-|---|---|
-| `npm run dev` | Inicia o servidor local do Vite com HMR |
-| `npm run build` | Compila o projeto com validação estrita do TypeScript |
-| `npm run preview` | Executa localmente o bundle de produção gerado |
-| `npm run lint` | Executa o linter ultra-rápido Oxlint |
+- `npm run dev`: Inicia o ambiente de desenvolvimento local com Hot Module Replacement (HMR).
+- `npm run build`: Executa a verificação estrita do TypeScript e compila o bundle de produção.
+- `npm run preview`: Permite testar localmente o pacote compilado da pasta `dist/`.
+- `npm run lint`: Executa a checagem de boas práticas e sintaxe via Oxlint.
 
 ---
 
-## ⚙️ Modos de Leitura
+## 📜 Licença
 
-| Funcionalidade | Modo Cascata (Padrão) | Modo Página Única |
-|---|---|---|
-| **Experiência** | Rolagem contínua vertical ideal para Webtoons e leitura rápida | Foco página por página ideal para mangás tradicionais |
-| **Navegação** | Rolagem natural do mouse / touch | Teclas `←` / `→` ou cliques laterais |
-| **Carregamento** | Pré-carregamento dinâmico inteligente | Lazy loading da página ativa |
-
----
-
-## 📄 Licença
-
-Este projeto é disponibilizado sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
+Este projeto é distribuído sob os termos da licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
 <div align="center">
-Desenvolvido com carinho para amantes de mangás e preservação da literatura visual.
+
+Feito com dedicação para entusiastas de mangás e preservação da literatura visual.
+
+⭐ Se gostou do projeto, considere deixar uma estrela no repositório!
+
 </div>
