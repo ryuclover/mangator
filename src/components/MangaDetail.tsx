@@ -270,9 +270,9 @@ export const MangaDetail: React.FC<MangaDetailProps> = ({
             gap: '12px',
             padding: '16px 20px',
             borderRadius: 'var(--radius-md)',
-            backgroundColor: 'rgba(168, 85, 247, 0.1)',
-            border: '1px solid rgba(168, 85, 247, 0.3)',
-            color: '#C084FC',
+            backgroundColor: 'rgba(0, 245, 160, 0.08)',
+            border: '1px solid rgba(0, 245, 160, 0.25)',
+            color: '#00F5A0',
             fontSize: '0.9rem',
             fontWeight: 600,
             marginBottom: '1.25rem'

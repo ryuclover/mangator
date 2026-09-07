@@ -265,11 +265,11 @@ export function App() {
           justifyContent: 'center',
           gap: '14px'
         }}>
-          <Loader2 size={38} color="#C084FC" className="animate-spin" />
+          <Loader2 size={38} color="#00F5A0" className="animate-spin" />
           <div style={{ color: '#fff', fontWeight: 700, fontSize: '1.05rem' }}>
             {isLoadingPages ? 'Carregando páginas do capítulo online...' : 'Buscando lista de capítulos no banco online...'}
           </div>
-          <div style={{ color: '#C084FC', fontSize: '0.8rem' }}>
+          <div style={{ color: '#00F5A0', fontSize: '0.8rem' }}>
             Requisição em tempo real via MangaFire/API Network
           </div>
         </div>
@@ -296,27 +296,6 @@ export function App() {
 
       {/* Main Content */}
       <main style={{ flex: 1 }}>
-        {/* Banner Indicativo de Modo */}
-        {isMode2 && (
-          <div style={{
-            backgroundColor: 'rgba(168, 85, 247, 0.12)',
-            borderBottom: '1px solid rgba(168, 85, 247, 0.3)',
-            padding: '8px 1.5rem',
-            textAlign: 'center',
-            fontSize: '0.82rem',
-            color: '#E9D5FF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px'
-          }}>
-            <Zap size={14} color="#C084FC" />
-            <span>
-              <strong>MODO 2 ATIVADO:</strong> Conexão e requisições online em tempo real ativas! Pesquise qualquer obra como <em>One Piece, Berserk, Frieren, Solo Leveling</em>. Clique no ícone do mascote para retornar ao Modo 1.
-            </span>
-          </div>
-        )}
-
         {selectedManga ? (
           <MangaDetail
             manga={selectedManga}
@@ -336,7 +315,7 @@ export function App() {
                 justifyContent: 'center',
                 gap: '10px',
                 padding: '1.5rem',
-                color: '#C084FC',
+                color: 'var(--accent-emerald)',
                 fontWeight: 600
               }}>
                 <Loader2 size={20} className="animate-spin" />
@@ -355,7 +334,7 @@ export function App() {
                   gap: '1rem',
                   marginBottom: '1.25rem',
                   paddingBottom: '1rem',
-                  borderBottom: '1px solid rgba(168, 85, 247, 0.25)'
+                  borderBottom: '1px solid rgba(0, 245, 160, 0.2)'
                 }}>
                   <div>
                     <div style={{
@@ -365,11 +344,11 @@ export function App() {
                       fontSize: '0.75rem',
                       fontWeight: 800,
                       letterSpacing: '0.08em',
-                      color: '#C084FC',
+                      color: 'var(--accent-emerald)',
                       textTransform: 'uppercase',
                       marginBottom: '4px'
                     }}>
-                      <Flame size={14} color="#F97316" fill="#F97316" />
+                      <Flame size={14} color="#00F5A0" fill="#00F5A0" />
                       <span>TRENDING NOW • MANGAFIRE LIVE</span>
                     </div>
                     <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fff', margin: 0 }}>
@@ -403,10 +382,10 @@ export function App() {
                           fontSize: '0.78rem',
                           fontWeight: 700,
                           cursor: 'pointer',
-                          backgroundColor: timeframe === t.id ? '#9333EA' : 'transparent',
-                          color: timeframe === t.id ? '#fff' : 'var(--text-secondary)',
+                          backgroundColor: timeframe === t.id ? '#10B981' : 'transparent',
+                          color: timeframe === t.id ? '#05080E' : 'var(--text-secondary)',
                           transition: 'all 0.2s ease',
-                          boxShadow: timeframe === t.id ? '0 2px 10px rgba(147, 51, 234, 0.5)' : 'none'
+                          boxShadow: timeframe === t.id ? '0 2px 10px rgba(16, 185, 129, 0.4)' : 'none'
                         }}
                       >
                         {t.label}
@@ -481,7 +460,7 @@ export function App() {
                       fontSize: '0.72rem',
                       fontWeight: 800,
                       letterSpacing: '0.08em',
-                      color: isMode2 ? '#C084FC' : 'var(--accent-emerald)',
+                      color: 'var(--accent-emerald)',
                       textTransform: 'uppercase',
                       marginBottom: '2px'
                     }}>
@@ -491,8 +470,8 @@ export function App() {
                       <span>{activeTab === 'bookmarks' ? 'Meus Favoritos' : isMode2 ? 'Todos os Lançamentos' : 'Últimos Lançamentos'}</span>
                       <span style={{
                         fontSize: '0.75rem',
-                        color: isMode2 ? '#C084FC' : 'var(--accent-emerald)',
-                        backgroundColor: isMode2 ? 'rgba(168, 85, 247, 0.15)' : 'rgba(0, 245, 160, 0.12)',
+                        color: 'var(--accent-emerald)',
+                        backgroundColor: 'rgba(0, 245, 160, 0.12)',
                         padding: '2px 8px',
                         borderRadius: 'var(--radius-full)',
                         fontWeight: 700,
@@ -531,8 +510,8 @@ export function App() {
                               fontSize: '0.75rem',
                               fontWeight: 700,
                               cursor: 'pointer',
-                              backgroundColor: mangaTypeFilter === t.id ? '#9333EA' : 'transparent',
-                              color: mangaTypeFilter === t.id ? '#fff' : 'var(--text-secondary)',
+                              backgroundColor: mangaTypeFilter === t.id ? '#10B981' : 'transparent',
+                              color: mangaTypeFilter === t.id ? '#05080E' : 'var(--text-secondary)',
                               transition: 'all 0.15s ease'
                             }}
                           >
@@ -557,8 +536,8 @@ export function App() {
                             padding: '6px',
                             borderRadius: '6px',
                             border: 'none',
-                            backgroundColor: viewMode === 'grid' ? 'rgba(168, 85, 247, 0.3)' : 'transparent',
-                            color: viewMode === 'grid' ? '#C084FC' : 'var(--text-muted)',
+                            backgroundColor: viewMode === 'grid' ? 'rgba(0, 245, 160, 0.25)' : 'transparent',
+                            color: viewMode === 'grid' ? '#00F5A0' : 'var(--text-muted)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -574,8 +553,8 @@ export function App() {
                             padding: '6px',
                             borderRadius: '6px',
                             border: 'none',
-                            backgroundColor: viewMode === 'rows' ? 'rgba(168, 85, 247, 0.3)' : 'transparent',
-                            color: viewMode === 'rows' ? '#C084FC' : 'var(--text-muted)',
+                            backgroundColor: viewMode === 'rows' ? 'rgba(0, 245, 160, 0.25)' : 'transparent',
+                            color: viewMode === 'rows' ? '#00F5A0' : 'var(--text-muted)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
@@ -669,7 +648,7 @@ export function App() {
                   fontSize: '0.8rem',
                   color: 'var(--text-secondary)'
                 }}>
-                  {isMode2 ? <Zap size={16} color="#C084FC" /> : <Sparkles size={16} color="#00F5A0" />}
+                  {isMode2 ? <Zap size={16} color="#00F5A0" /> : <Sparkles size={16} color="#00F5A0" />}
                   <span>
                     {isMode2
                       ? 'Conexão viva com a rede de mangás online ativa. Requisições e leitura acontecem em tempo real.'

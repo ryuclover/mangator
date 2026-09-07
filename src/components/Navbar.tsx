@@ -36,8 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       zIndex: 100,
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      background: isMode2 ? 'rgba(18, 10, 30, 0.92)' : 'rgba(8, 10, 15, 0.85)',
-      borderBottom: isMode2 ? '1px solid rgba(168, 85, 247, 0.35)' : '1px solid rgba(255, 255, 255, 0.08)',
+      background: 'rgba(8, 10, 15, 0.85)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
       padding: '0 1.5rem',
       transition: 'all 0.3s ease'
     }}>
@@ -54,7 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
              onClick={() => onSelectTab('catalog')}>
           <div
-            title="CLIQUE AQUI PARA ALTERNAR ENTRE MODO 1 (DOMÍNIO PÚBLICO) E MODO 2 (SCRAPING ONLINE MANGAFIRE EM TEMPO REAL)!"
+            title="Clique para alternar entre Modo 1 (Acervo Clássico) e Modo 2 (Mangás Online)!"
             onClick={handleIconClick}
             style={{
               position: 'relative',
@@ -62,18 +62,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               height: '48px',
               borderRadius: '14px',
               overflow: 'hidden',
-              border: isMode2 ? '2px solid #C084FC' : '2px solid rgba(0, 245, 160, 0.4)',
-              boxShadow: isMode2 ? '0 0 20px rgba(168, 85, 247, 0.6), 0 0 10px #A855F7' : '0 0 15px rgba(0, 245, 160, 0.25)',
+              border: '2px solid rgba(0, 245, 160, 0.4)',
+              boxShadow: '0 0 15px rgba(0, 245, 160, 0.25)',
               transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: '#05070A',
-              cursor: 'pointer',
-              transform: isMode2 ? 'scale(1.05)' : 'scale(1)'
+              cursor: 'pointer'
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.12) rotate(4deg)')}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = isMode2 ? 'scale(1.05) rotate(0deg)' : 'scale(1) rotate(0deg)')}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1) rotate(4deg)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1) rotate(0deg)')}
           >
             <img
               src={logoSrc}
@@ -91,9 +90,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               width: '10px',
               height: '10px',
               borderRadius: '50%',
-              backgroundColor: isMode2 ? '#C084FC' : '#00F5A0',
+              backgroundColor: '#00F5A0',
               border: '2px solid #000',
-              boxShadow: isMode2 ? '0 0 8px #C084FC' : '0 0 6px #00F5A0'
+              boxShadow: '0 0 6px #00F5A0'
             }} />
           </div>
 
@@ -111,8 +110,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}>
                 MANGA
                 <span style={{
-                  color: isMode2 ? '#C084FC' : '#00F5A0',
-                  textShadow: isMode2 ? '0 0 16px rgba(192, 132, 252, 0.6)' : '0 0 16px rgba(0, 245, 160, 0.5)'
+                  color: '#00F5A0',
+                  textShadow: '0 0 16px rgba(0, 245, 160, 0.5)'
                 }}>
                   TOR
                 </span>
@@ -124,22 +123,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   fontWeight: 800,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  backgroundColor: isMode2 ? 'rgba(168, 85, 247, 0.25)' : 'rgba(0, 245, 160, 0.15)',
-                  color: isMode2 ? '#C084FC' : '#00F5A0',
-                  border: isMode2 ? '1px solid rgba(192, 132, 252, 0.6)' : '1px solid rgba(0, 245, 160, 0.3)',
+                  backgroundColor: 'rgba(0, 245, 160, 0.15)',
+                  color: '#00F5A0',
+                  border: '1px solid rgba(0, 245, 160, 0.3)',
                   padding: '3px 8px',
                   borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  boxShadow: isMode2 ? '0 0 12px rgba(168, 85, 247, 0.4)' : 'none',
+                  boxShadow: 'none',
                   cursor: 'pointer'
                 }}
               >
                 {isMode2 ? (
                   <>
-                    <Zap size={11} fill="#C084FC" />
-                    🔥 MODO 2: MANGAFIRE LIVE
+                    <Zap size={11} fill="#00F5A0" />
+                    MODO 2 (ONLINE)
                   </>
                 ) : (
                   'MODO 1 (ACERVO)'
@@ -148,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div style={{
               fontSize: '0.73rem',
-              color: isMode2 ? '#E9D5FF' : 'var(--text-muted)',
+              color: 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
@@ -156,13 +155,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}>
               {isMode2 ? (
                 <>
-                  <Zap size={11} color="#C084FC" />
-                  <span>Requisições e dados reais do MangaFire (Clique no ícone p/ Modo 1)</span>
+                  <Zap size={11} color="#00F5A0" />
+                  <span>Rede Online Ativa (Clique no ícone p/ Modo 1)</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck size={11} color="#10B981" />
-                  <span>Domínio Público Autêntico (Clique no ícone p/ ativar Modo 2)</span>
+                  <span>Domínio Público Autêntico (Clique no ícone p/ Modo 2)</span>
                 </>
               )}
             </div>

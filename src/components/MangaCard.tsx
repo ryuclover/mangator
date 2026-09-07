@@ -47,7 +47,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = '#151B2B';
-          e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+          e.currentTarget.style.borderColor = 'rgba(0, 245, 160, 0.4)';
           e.currentTarget.style.transform = 'translateX(4px)';
         }}
         onMouseLeave={(e) => {
@@ -114,7 +114,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
           </h4>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-            <span style={{ color: '#C084FC', fontWeight: 600 }}>
+            <span style={{ color: '#00F5A0', fontWeight: 600 }}>
               Ch. {manga.latestChapterNum || manga.chapters?.[0]?.number || 1}
             </span>
             <span>•</span>
@@ -126,7 +126,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
         <button
           onClick={(e) => onToggleBookmark(manga.id, e)}
           style={{
-            background: isBookmarked ? '#C084FC' : 'rgba(255, 255, 255, 0.06)',
+            background: isBookmarked ? '#00F5A0' : 'rgba(255, 255, 255, 0.06)',
             color: isBookmarked ? '#05080E' : '#fff',
             border: 'none',
             borderRadius: '50%',
@@ -247,7 +247,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
             onClick={(e) => onToggleBookmark(manga.id, e)}
             style={{
               pointerEvents: 'auto',
-              background: isBookmarked ? (isMangaFire ? '#C084FC' : '#00F5A0') : 'rgba(0, 0, 0, 0.6)',
+              background: isBookmarked ? '#00F5A0' : 'rgba(0, 0, 0, 0.6)',
               color: isBookmarked ? '#05080E' : '#fff',
               border: 'none',
               borderRadius: '50%',
@@ -280,7 +280,7 @@ export const MangaCard: React.FC<MangaCardProps> = ({
         }}>
           <span style={{
             fontSize: '0.75rem',
-            color: isMangaFire ? '#C084FC' : 'var(--accent-emerald)',
+            color: 'var(--accent-emerald)',
             fontWeight: 700,
             letterSpacing: '0.04em'
           }}>
