@@ -103,8 +103,31 @@ export const Reader: React.FC<ReaderProps> = ({
     });
   };
 
-  const goToNextPage = () => {
+  const handleJumpToPage = (idx: number) => {
+    if (idx < 0 || idx >= totalPages) return;
     if (readingMode === 'double') {
+      const target = idx % 2 === 1 ? idx - 1 : idx;
+      setCurrentPage(target);
+    } else {
+      setCurrentPage(idx);
+    }
+
+    if (readingMode === 'webtoon') {
+      const pageEl = document.getElementById(`reader-page-${idx}`);
+      if (pageEl) {
+        pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
+  const goToNextPage = () => {
+    if (readingMode === 'webtoon') {
+      if (currentPage + 1 < totalPages) {
+        handleJumpToPage(currentPage + 1);
+      } else {
+        handleChapterFinished();
+      }
+    } else if (readingMode === 'double') {
       if (currentPage + 2 < totalPages) {
         setCurrentPage((p) => p + 2);
       } else if (currentPage + 1 < totalPages) {
@@ -122,7 +145,11 @@ export const Reader: React.FC<ReaderProps> = ({
   };
 
   const goToPrevPage = () => {
-    if (readingMode === 'double') {
+    if (readingMode === 'webtoon') {
+      if (currentPage > 0) {
+        handleJumpToPage(currentPage - 1);
+      }
+    } else if (readingMode === 'double') {
       if (currentPage >= 2) {
         setCurrentPage((p) => p - 2);
       } else {
@@ -134,6 +161,45 @@ export const Reader: React.FC<ReaderProps> = ({
       }
     }
   };
+
+  // Scroll active thumbnail into view in filmstrip
+  useEffect(() => {
+    const thumbEl = document.getElementById(`reader-thumb-${currentPage}`);
+    if (thumbEl) {
+      thumbEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [currentPage]);
+
+  // Sync scroll position in webtoon mode to update active thumbnail and progress
+  useEffect(() => {
+    if (readingMode !== 'webtoon') return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const pages = chapter.pages;
+          for (let i = pages.length - 1; i >= 0; i--) {
+            const el = document.getElementById(`reader-page-${i}`);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= window.innerHeight * 0.45) {
+                setCurrentPage(i);
+                break;
+              }
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [readingMode, chapter.pages]);
 
   const handleDownloadChapter = async () => {
     setIsDownloading(true);
@@ -387,10 +453,12 @@ export const Reader: React.FC<ReaderProps> = ({
 
       {/* Main Canvas / Reading Container */}
       <div
+        ref={containerRef}
         onClick={() => setControlsVisible((prev) => !prev)}
         style={{
           flex: 1,
           overflowY: readingMode === 'webtoon' ? 'auto' : 'hidden',
+          scrollBehavior: 'smooth',
           display: 'flex',
           justifyContent: 'center',
           alignItems: readingMode === 'webtoon' ? 'flex-start' : 'center',
@@ -413,11 +481,17 @@ export const Reader: React.FC<ReaderProps> = ({
           onClick={(e) => e.stopPropagation()}
           >
             {chapter.pages.map((pageUrl, idx) => (
-              <div key={idx} style={{
-                position: 'relative',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                lineHeight: 0
-              }}>
+              <div
+                key={idx}
+                id={`reader-page-${idx}`}
+                data-page-index={idx}
+                style={{
+                  position: 'relative',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  lineHeight: 0,
+                  scrollMarginTop: '80px'
+                }}
+              >
                 <img
                   src={pageUrl}
                   alt={`Página ${idx + 1}`}
@@ -612,103 +686,114 @@ export const Reader: React.FC<ReaderProps> = ({
         pointerEvents: controlsVisible ? 'auto' : 'none',
         transition: 'opacity 0.25s ease'
       }}>
-        {readingMode !== 'webtoon' && (
-          <div style={{
-            width: '100%',
-            maxWidth: '650px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px'
-          }}>
-            <button
-              onClick={goToPrevPage}
-              disabled={currentPage === 0}
-              style={{
-                background: 'rgba(0,0,0,0.6)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: currentPage === 0 ? 'rgba(255,255,255,0.3)' : '#fff',
-                borderRadius: '50%',
-                width: '36px',
-                height: '36px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: currentPage === 0 ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <ChevronLeft size={20} />
-            </button>
+        {/* Page Slider & Fast Stepper */}
+        <div style={{
+          width: '100%',
+          maxWidth: '650px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}>
+          <button
+            onClick={goToPrevPage}
+            disabled={currentPage === 0}
+            style={{
+              background: 'rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: currentPage === 0 ? 'rgba(255,255,255,0.3)' : '#fff',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage === 0 ? 'not-allowed' : 'pointer'
+            }}
+            title="Página anterior"
+          >
+            <ChevronLeft size={20} />
+          </button>
 
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input
-                type="range"
-                min={0}
-                max={totalPages - 1}
-                value={currentPage}
-                onChange={(e) => setCurrentPage(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#00F5A0', cursor: 'pointer' }}
-              />
-              <span style={{
-                fontSize: '0.8rem',
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                color: '#fff',
-                minWidth: '55px',
-                textAlign: 'right'
-              }}>
-                {currentPage + 1} / {totalPages}
-              </span>
-            </div>
-
-            <button
-              onClick={goToNextPage}
-              disabled={currentPage >= totalPages - 1}
-              style={{
-                background: 'rgba(0,0,0,0.6)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: currentPage >= totalPages - 1 ? 'rgba(255,255,255,0.3)' : '#fff',
-                borderRadius: '50%',
-                width: '36px',
-                height: '36px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer'
-              }}
-            >
-              <ChevronRight size={20} />
-            </button>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input
+              type="range"
+              min={0}
+              max={Math.max(0, totalPages - 1)}
+              value={currentPage}
+              onChange={(e) => handleJumpToPage(Number(e.target.value))}
+              style={{ width: '100%', accentColor: '#00F5A0', cursor: 'pointer' }}
+            />
+            <span style={{
+              fontSize: '0.8rem',
+              fontFamily: 'var(--font-display)',
+              fontWeight: 700,
+              color: '#fff',
+              minWidth: '55px',
+              textAlign: 'right'
+            }}>
+              {currentPage + 1} / {totalPages}
+            </span>
           </div>
-        )}
 
-        {/* Thumbnail Preview strip */}
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage >= totalPages - 1}
+            style={{
+              background: 'rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: currentPage >= totalPages - 1 ? 'rgba(255,255,255,0.3)' : '#fff',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer'
+            }}
+            title="Próxima página"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+
+        {/* Thumbnail Preview Strip */}
         <div style={{
           display: 'flex',
           gap: '8px',
           overflowX: 'auto',
           maxWidth: '850px',
-          padding: '4px'
+          padding: '6px 4px',
+          scrollbarWidth: 'none'
         }}>
           {chapter.pages.map((p, idx) => (
             <div
               key={idx}
+              id={`reader-thumb-${idx}`}
               onClick={(e) => {
                 e.stopPropagation();
-                setCurrentPage(idx);
+                handleJumpToPage(idx);
               }}
               style={{
-                width: '42px',
-                height: '60px',
-                borderRadius: '4px',
+                width: '46px',
+                height: '66px',
+                borderRadius: '6px',
                 overflow: 'hidden',
                 cursor: 'pointer',
                 border: currentPage === idx ? '2px solid #00F5A0' : '1px solid rgba(255,255,255,0.2)',
-                opacity: currentPage === idx ? 1 : 0.5,
-                transition: 'all 0.2s ease',
+                boxShadow: currentPage === idx ? '0 0 14px rgba(0, 245, 160, 0.7)' : 'none',
+                opacity: currentPage === idx ? 1 : 0.55,
+                transform: currentPage === idx ? 'scale(1.08)' : 'scale(1)',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                 flexShrink: 0
               }}
+              title={`Pular para página ${idx + 1}`}
             >
-              <img src={p} alt={`Thumb ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={p}
+                alt={`Thumb ${idx + 1}`}
+                referrerPolicy="no-referrer"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
           ))}
         </div>
