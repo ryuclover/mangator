@@ -85,7 +85,7 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'history_buff',
     title: 'Arqueólogo do Mangá',
-    description: 'Leu uma obra clássica histórica do século XIX ou início do XX.',
+    description: 'Leu uma obra clássica histórica do catálogo de domínio público.',
     icon: '📜',
     unlocked: true,
     unlockedAt: 'Hoje'
@@ -113,7 +113,9 @@ export const INITIAL_ACHIEVEMENTS: Achievement[] = [
   }
 ];
 
-export const MANGA_DATA: Manga[] = [
+import { HISTORICAL_CATALOG } from './historicalCatalog';
+
+const INITIAL_SHOWCASE: Manga[] = [
   {
     id: 'kaguya-hime',
     title: 'O Conto da Princesa Kaguya',
@@ -155,47 +157,6 @@ export const MANGA_DATA: Manga[] = [
             text: 'A introdução é mágica! É incrível pensar que essa história foi escrita no século X e já continha elementos que hoje definem o gênero de ficção científica e fantasia.',
             likes: 24,
             isSpoiler: false
-          },
-          {
-            id: 'c2',
-            userName: 'Mariana Costa',
-            userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
-            date: 'Ontem',
-            text: 'Prestem atenção na cena em que a criança cresce envolta em poeira estelar na página 3, a adaptação visual ficou de tirar o fôlego.',
-            likes: 15,
-            isSpoiler: false
-          },
-          {
-            id: 'c3',
-            userName: 'Takeshi M.',
-            userAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80',
-            date: 'Há 3 horas',
-            text: 'O final do conto quando os mensageiros da Lua chegam para buscar Kaguya com o manto de penas que apaga suas memórias terrenas é de partir o coração.',
-            likes: 8,
-            isSpoiler: true
-          }
-        ]
-      },
-      {
-        id: 'kaguya-ch-2',
-        number: 2,
-        title: 'Capítulo 2: Os Cinco Desafios Impossíveis dos Nobres',
-        releaseDate: 'Domínio Público',
-        pagesCount: 3,
-        pages: [
-          '/manga/kaguya-p2.jpg',
-          '/manga/kaguya-p3.jpg',
-          '/manga/kaguya-p1.jpg'
-        ],
-        comments: [
-          {
-            id: 'c4',
-            userName: 'Lucas Prado',
-            userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-            date: 'Há 1 semana',
-            text: 'Os cinco nobres tentando enganá-la com tesouros falsos (o galho de joias de Horai, a túnica de fogo) é cômico e genial ao mesmo tempo!',
-            likes: 12,
-            isSpoiler: false
           }
         ]
       }
@@ -212,18 +173,6 @@ export const MANGA_DATA: Manga[] = [
         date: '02 de Março, 2026',
         content: 'Uma obra-prima atemporal. A forma como Taketori Monogatari mistura poesia com o mistério extraterrestre de Kaguya é simplesmente fascinante.',
         likes: 42
-      },
-      {
-        id: 'r2',
-        userName: 'Sofia Alencar',
-        userAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
-        rating: 5,
-        storyRating: 4.8,
-        artRating: 5.0,
-        charactersRating: 4.9,
-        date: '28 de Fevereiro, 2026',
-        content: 'O leitor em modo cascata e dupla página no Mangator valorizou imensamente os quadros dessa edição.',
-        likes: 19
       }
     ]
   },
@@ -256,33 +205,10 @@ export const MANGA_DATA: Manga[] = [
           '/manga/cthulhu-p2.jpg',
           '/manga/cthulhu-p3.jpg'
         ],
-        comments: [
-          {
-            id: 'cc1',
-            userName: 'Eduardo Neves',
-            userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
-            date: 'Há 4 dias',
-            text: 'Os traços no estilo de Junji Ito dão uma atmosfera sufocante à arquitetura de Rlyeh!',
-            likes: 31,
-            isSpoiler: false
-          }
-        ]
+        comments: []
       }
     ],
-    reviews: [
-      {
-        id: 'rc1',
-        userName: 'Marcos Vinicius',
-        userAvatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80',
-        rating: 5,
-        storyRating: 5.0,
-        artRating: 4.9,
-        charactersRating: 4.8,
-        date: '01 de Março, 2026',
-        content: 'O melhor exemplo de como literatura clássica de horror ganha vida nova em formato mangá. O traço sombrio com hachuras pesadas é impecável.',
-        likes: 56
-      }
-    ]
+    reviews: []
   },
   {
     id: 'dracula-nocturne',
@@ -313,33 +239,10 @@ export const MANGA_DATA: Manga[] = [
           '/manga/dracula-p2.jpg',
           '/manga/dracula-p3.jpg'
         ],
-        comments: [
-          {
-            id: 'cd1',
-            userName: 'Beatriz Lima',
-            userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80',
-            date: 'Há 5 dias',
-            text: 'A atmosfera gótica dessa adaptação lembra bastante as artes de Ayami Kojima em Castlevania: Symphony of the Night. Sensacional!',
-            likes: 18,
-            isSpoiler: false
-          }
-        ]
+        comments: []
       }
     ],
-    reviews: [
-      {
-        id: 'rd1',
-        userName: 'Felipe Dantas',
-        userAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80',
-        rating: 5,
-        storyRating: 4.9,
-        artRating: 5.0,
-        charactersRating: 4.9,
-        date: '25 de Fevereiro, 2026',
-        content: 'Fidelidade narrativa impressionante ao romance epistolar de Bram Stoker, mantendo a tensão de Harker preso no castelo.',
-        likes: 38
-      }
-    ]
+    reviews: []
   },
   {
     id: 'tagosaku-tokyo',
@@ -370,32 +273,14 @@ export const MANGA_DATA: Manga[] = [
           '/manga/tagosaku-p2.jpg',
           '/manga/tagosaku-p3.jpg'
         ],
-        comments: [
-          {
-            id: 'ct1',
-            userName: 'Professor Hiroshi',
-            userAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
-            date: 'Há 1 semana',
-            text: 'Ver esta obra de 1902 preservada com essa clareza visual é emocionante para qualquer historiador de quadrinhos!',
-            likes: 45,
-            isSpoiler: false
-          }
-        ]
+        comments: []
       }
     ],
-    reviews: [
-      {
-        id: 'rt1',
-        userName: 'Camila Rocha',
-        userAvatar: 'https://images.unsplash.com/photo-1548142813-c348350df52b?w=100&auto=format&fit=crop&q=80',
-        rating: 5,
-        storyRating: 4.7,
-        artRating: 4.9,
-        charactersRating: 5.0,
-        date: '20 de Fevereiro, 2026',
-        content: 'Valor histórico incalculável. Uma janela rara para o Japão da era Meiji sob os olhos pioneiros de Rakuten Kitazawa.',
-        likes: 29
-      }
-    ]
+    reviews: []
   }
+];
+
+export const MANGA_DATA: Manga[] = [
+  ...INITIAL_SHOWCASE,
+  ...HISTORICAL_CATALOG
 ];
