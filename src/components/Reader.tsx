@@ -50,7 +50,19 @@ export const Reader: React.FC<ReaderProps> = ({
   onUpdateProgress
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(initialPage);
-  const [readingMode, setReadingMode] = useState<ReadingMode>('single');
+  const [readingMode, setReadingMode] = useState<ReadingMode>(() => {
+    const saved = localStorage.getItem('mangator_reading_mode');
+    if (saved === 'single' || saved === 'double' || saved === 'webtoon') {
+      return saved;
+    }
+    return 'webtoon';
+  });
+
+  const handleSetReadingMode = (mode: ReadingMode) => {
+    setReadingMode(mode);
+    localStorage.setItem('mangator_reading_mode', mode);
+  };
+
   const [theme, setTheme] = useState<BackgroundTheme>('black');
   const [brightness, setBrightness] = useState<number>(100);
   const [readerWidth, setReaderWidth] = useState<number>(850);
@@ -257,7 +269,7 @@ export const Reader: React.FC<ReaderProps> = ({
             padding: '3px'
           }}>
             <button
-              onClick={() => setReadingMode('webtoon')}
+              onClick={() => handleSetReadingMode('webtoon')}
               title="Cascata Vertical (Webtoon)"
               style={{
                 padding: '6px 10px',
@@ -278,7 +290,7 @@ export const Reader: React.FC<ReaderProps> = ({
             </button>
 
             <button
-              onClick={() => setReadingMode('single')}
+              onClick={() => handleSetReadingMode('single')}
               title="Página Única"
               style={{
                 padding: '6px 10px',
@@ -299,7 +311,7 @@ export const Reader: React.FC<ReaderProps> = ({
             </button>
 
             <button
-              onClick={() => setReadingMode('double')}
+              onClick={() => handleSetReadingMode('double')}
               title="Página Dupla (Manga Tradicional RTL)"
               style={{
                 padding: '6px 10px',
